@@ -1,0 +1,154 @@
+meta:
+  schema: facilities
+  version: 1
+  id_namespace: medieval_village
+
+# =============================================================================
+# FACILITIES
+# =============================================================================
+# Production buildings that run recipes. Workers are assigned, they have
+# capacity, and they enable specific recipes.
+#
+# Schema fields:
+# - kind: facility
+# - tier: complexity/tech level (0=basic, 1=intermediate, 2=advanced)
+# - capacity: max workers that can be assigned
+# - build_time_days: time to construct
+# - inputs: resources required to build
+# - maintenance_per_season: recurring costs
+# - requires_equipment: equipment that must be present (optional)
+# - enables_recipes: list of recipe IDs this facility can run
+# =============================================================================
+
+facilities:
+  # Core production chain facilities referenced by recipes.yaml must exist here.
+  # Costs/maintenance are intentionally "gamey but plausible" and can be tuned later.
+
+  bakery:
+    kind: facility
+    tier: 1
+    capacity: 2
+    build_time_days: 7
+    inputs: { lumber: 30, stone_blocks: 10, clay: 20, nails: 5 }
+    maintenance_per_season: { lumber: 2, nails: 1 }
+    enables_recipes: [bread_from_flour]
+
+  grain_mill:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 14
+    inputs: { lumber: 40, stone_blocks: 20, iron_ingots: 3, nails: 8 }
+    maintenance_per_season: { lumber: 2, nails: 1 }
+    requires_equipment: [mill_wheel]
+    enables_recipes: [flour_from_grain]
+
+  brewery:
+    kind: facility
+    tier: 2
+    capacity: 2
+    build_time_days: 12
+    inputs: { lumber: 50, stone_blocks: 15, bricks: 25, nails: 8, iron_ingots: 2 }
+    maintenance_per_season: { lumber: 2, nails: 1 }
+    enables_recipes: [ale_from_grain]
+
+  smokehouse:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 7
+    inputs: { lumber: 25, stone_blocks: 8, clay: 10, nails: 4 }
+    maintenance_per_season: { lumber: 1 }
+    enables_recipes: [preserved_food_from_meat, preserved_food_from_fish]
+
+  sawmill:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 10
+    inputs: { lumber: 20, stone_blocks: 10, nails: 6, iron_ingots: 2 }
+    maintenance_per_season: { nails: 1 }
+    enables_recipes: [lumber_from_logs]
+
+  woodworker_hut:
+    kind: facility
+    tier: 0
+    capacity: 1
+    build_time_days: 3
+    inputs: { logs: 20, stone: 5 }
+    maintenance_per_season: {}
+    enables_recipes: [firewood_from_logs]
+
+  charcoal_pit:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 6
+    inputs: { stone: 20, clay: 10, lumber: 10 }
+    maintenance_per_season: { clay: 2 }
+    enables_recipes: [charcoal_from_firewood]
+
+  kiln:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 8
+    inputs: { stone: 20, clay: 25, bricks: 10 }
+    maintenance_per_season: { clay: 2 }
+    enables_recipes: [bricks_from_clay]
+
+  stonemason:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 9
+    inputs: { stone_blocks: 10, lumber: 15, nails: 4, iron_ingots: 1 }
+    maintenance_per_season: { iron_ingots: 1 }  # tool wear represented abstractly
+    enables_recipes: [stone_blocks_from_stone]
+
+  smelter:
+    kind: facility
+    tier: 2
+    capacity: 1
+    build_time_days: 14
+    inputs: { stone_blocks: 25, bricks: 40, lumber: 20, iron_ingots: 4, nails: 10 }
+    maintenance_per_season: { bricks: 5 }
+    enables_recipes:
+      [iron_ingots_from_ore, copper_ingots_from_ore, tin_ingots_from_ore, silver_ingots_from_ore]
+
+  blacksmith:
+    kind: facility
+    tier: 2
+    capacity: 1
+    build_time_days: 12
+    inputs: { stone_blocks: 15, lumber: 25, bricks: 20, nails: 10, iron_ingots: 5 }
+    maintenance_per_season: { lumber: 2, nails: 1 }
+    requires_equipment: [forge_anvil]
+    enables_recipes: [nails_from_iron_ingots, tools_from_iron_ingots]
+
+  tannery:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 10
+    inputs: { lumber: 30, stone_blocks: 10, clay: 10, nails: 6 }
+    maintenance_per_season: { salt: 2 }  # consumable upkeep represented here as maintenance
+    enables_recipes: [leather_from_hides]
+
+  weaver_hut:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 8
+    inputs: { lumber: 25, stone: 10, nails: 5 }
+    maintenance_per_season: { lumber: 1 }
+    enables_recipes: [cloth_from_fiber]
+
+  thatching_shed:
+    kind: facility
+    tier: 0
+    capacity: 1
+    build_time_days: 4
+    inputs: { lumber: 15, reeds: 10 }
+    maintenance_per_season: { reeds: 2 }
+    enables_recipes: [thatch_from_reeds]
