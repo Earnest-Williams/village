@@ -73,9 +73,9 @@ def demo_session():
     if game.build_facility("sawmill"):
         print("✓ Sawmill built!")
     
-    print("\nBuilding woodcutter_hut...")
-    if game.build_facility("woodcutter_hut"):
-        print("✓ Woodcutter hut built!")
+    print("\nBuilding woodworker_hut...")
+    if game.build_facility("woodworker_hut"):
+        print("✓ Woodworker hut built!")
     
     game.print_status()
     
@@ -87,8 +87,8 @@ def demo_session():
     print("\nAssigning 1 worker to sawmill...")
     game.assign_worker("sawmill", 1)
     
-    print("Assigning 1 worker to woodcutter_hut...")
-    game.assign_worker("woodcutter_hut", 1)
+    print("Assigning 1 worker to woodworker_hut...")
+    game.assign_worker("woodworker_hut", 1)
     
     game.print_status()
     

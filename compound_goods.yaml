@@ -90,17 +90,17 @@ compound_goods:
       tier: 1
       capacity: 1
       build_time_days: 10
-      inputs: { lumber: 30, stone_blocks: 10, nails: 6, iron_ingots: 2 }
-      maintenance_per_season: { lumber: 2, nails: 1 }
+      inputs: { lumber: 20, stone_blocks: 10, nails: 6, iron_ingots: 2 }
+      maintenance_per_season: { nails: 1 }
       enables_recipes: [lumber_from_logs]
 
-    woodcutter_hut:
+    woodworker_hut:
       kind: facility
       tier: 0
       capacity: 1
       build_time_days: 3
-      inputs: { lumber: 12, stone: 5 }
-      maintenance_per_season: { lumber: 1 }
+      inputs: { logs: 20, stone: 5 }
+      maintenance_per_season: {}
       enables_recipes: [firewood_from_logs]
 
     charcoal_pit:

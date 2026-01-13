@@ -76,7 +76,7 @@ recipes:
 
   firewood_from_logs:
     name: Split Logs into Firewood
-    facility: woodcutter_hut
+    facility: woodworker_hut
     cycle_time_s: 25
     labor: 1
     inputs: { logs: 1 }

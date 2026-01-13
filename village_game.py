@@ -71,9 +71,14 @@ class Village:
 class GameEngine:
     """Core game loop and mechanics."""
     
-    def __init__(self, data_path: str = "/home/claude/data"):
+    def __init__(self, data_path: Optional[str] = None):
         self.village = Village()
-        self.load_game_data(data_path)
+        # Default to ./data if it exists next to this module, otherwise fall back to the module directory
+        if data_path is None:
+            base_dir = Path(__file__).parent
+            data_dir = base_dir / "data"
+            data_path = data_dir if data_dir.is_dir() else base_dir
+        self.load_game_data(str(data_path))
         
     def load_game_data(self, path: str):
         """Load YAML game data files."""
@@ -295,10 +300,10 @@ def main():
     
     # Build first facility
     print("\n--- BUILDING PHASE (Day 4) ---")
-    print("Attempting to build woodcutter_hut...")
+    print("Attempting to build woodworker_hut...")
     
-    if game.build_facility("woodcutter_hut"):
-        print("✓ Built woodcutter_hut!")
+    if game.build_facility("woodworker_hut"):
+        print("✓ Built woodworker_hut!")
     else:
         print("✗ Cannot build - missing resources")
         print("Required: lumber: 12, stone: 5")
