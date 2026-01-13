@@ -1,0 +1,99 @@
+meta:
+  schema: fixtures
+  version: 1
+  id_namespace: medieval_village
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+# Placed infrastructure with no workers assigned. They provide passive effects
+# and bonuses to the village or specific areas.
+#
+# Schema fields:
+# - kind: fixture
+# - build_time_days: time to construct
+# - inputs: resources required to build
+# - placement: where it can be placed (perimeter, anywhere, linear, river_crossing)
+# - maintenance_per_season: recurring costs (optional)
+# - effects: passive bonuses and capabilities
+#
+# -----------------------------------------------------------------------------
+# Effects Semantics & Stacking Rules
+# -----------------------------------------------------------------------------
+# Effects are data and must be machine-readable. Rules:
+#
+# 1) *_bonus fields are DECIMAL additive bonuses applied to a base.
+#    Example: water_gather_rate_bonus: 0.80 means +80%.
+#    Stacking rule: sum bonuses from all applicable sources, then apply once:
+#      final = base * (1 + sum(bonuses))
+#
+# 2) *_multiplier fields are multiplicative modifiers to a base.
+#    Example: travel_time_multiplier: 0.5 means half travel time.
+#    Stacking rule: multiply all multipliers:
+#      final = base * product(multipliers)
+#
+# 3) storage_bonus are absolute capacity increases (not percentages).
+#    Example: storage_bonus.grain: 200 means +200 grain capacity units.
+#
+# 4) When multiple effects of the same exact key apply, use the stacking rule above.
+#    When different keys conflict, prefer explicit resolution in code.
+# =============================================================================
+
+fixtures:
+
+  wall_section:
+    kind: fixture
+    build_time_days: 30
+    inputs: { stone_blocks: 100, iron_ingots: 30, lumber: 50, nails: 20 }
+    placement: perimeter
+    maintenance_per_season: { stone: 5 }
+    effects:
+      defense_bonus: 20
+      max_stack: 8
+
+  well:
+    kind: fixture
+    build_time_days: 10
+    inputs: { stone_blocks: 30, lumber: 10, iron_ingots: 2 }
+    placement: anywhere
+    effects:
+      water_gather_rate_bonus: 0.80
+      radius_tiles: 15
+    note: "Villagers gather water much faster within radius."
+
+  granary:
+    kind: fixture
+    build_time_days: 12
+    inputs: { lumber: 60, stone_blocks: 15, bricks: 40 }
+    placement: anywhere
+    effects:
+      storage_bonus: { grain: 200, flour: 100, vegetables: 50 }
+      perish_delay_days: 7
+
+  watchtower:
+    kind: fixture
+    build_time_days: 14
+    inputs: { lumber: 40, stone_blocks: 25, nails: 10 }
+    placement: anywhere
+    effects:
+      raid_warning_days: 3
+      vision_radius_tiles: 50
+
+  irrigation_channel_10m:
+    kind: fixture
+    build_time_days: 5
+    inputs: { stone: 50, clay: 30, lumber: 15 }
+    placement: linear
+    effects:
+      farm_yield_bonus_per_100m: 0.15
+      requires_water_source_connection: true
+    note: "Bonuses apply only when connected to a valid water source."
+
+  bridge:
+    kind: fixture
+    build_time_days: 20
+    inputs: { lumber: 80, stone_blocks: 40, iron_ingots: 5, nails: 20 }
+    placement: river_crossing
+    effects:
+      allows_crossing: river
+      travel_time_multiplier: 0.5

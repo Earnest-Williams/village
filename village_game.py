@@ -83,20 +83,32 @@ class GameEngine:
     def load_game_data(self, path: str):
         """Load YAML game data files."""
         base = Path(path)
-        
+
         with open(base / "raw_goods.yaml") as f:
             data = yaml.safe_load(f)
             self.village.raw_goods = data.get("goods", {})
-        
+
         with open(base / "produced_goods.yaml") as f:
             data = yaml.safe_load(f)
             self.village.produced_goods = data.get("goods", {})
-        
-        with open(base / "compound_goods.yaml") as f:
-            data = yaml.safe_load(f)
-            cg = data.get("compound_goods", {})
-            self.village.compound_goods = cg
-        
+
+        # Load compound goods from separate files
+        with open(base / "facilities.yaml") as f:
+            facilities_data = yaml.safe_load(f)
+
+        with open(base / "fixtures.yaml") as f:
+            fixtures_data = yaml.safe_load(f)
+
+        with open(base / "equipment.yaml") as f:
+            equipment_data = yaml.safe_load(f)
+
+        # Merge into compound_goods structure for backward compatibility
+        self.village.compound_goods = {
+            "facilities": facilities_data.get("facilities", {}),
+            "fixtures": fixtures_data.get("fixtures", {}),
+            "equipment": equipment_data.get("equipment", {}),
+        }
+
         with open(base / "recipes.yaml") as f:
             data = yaml.safe_load(f)
             self.village.recipes = data.get("recipes", {})
