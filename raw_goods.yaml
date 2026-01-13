@@ -1,0 +1,260 @@
+meta:
+  schema: goods_raw
+  version: 6
+  id_namespace: medieval_village
+
+# =============================================================================
+# GOODS (RAW)
+# =============================================================================
+# Conventions:
+# - Each good defines a single inventory "unit" via measure.*.
+# - Recipes consume/produce inventory units (not kg directly).
+# - "stack" is inventory stack size (NOT weight). Use measure.per_unit_kg to infer weight.
+# - Targeting a "heavy stack" around ~100–150 kg for consistency across bulky items.
+#
+# gather_rate (0..99):
+# - 0  = cannot be gathered directly from the world (must be produced via buildings/animals/etc.)
+# - 1..99 = gatherable, as a percentage of the best dedicated producer rate.
+# - Nothing should be 100 (production buildings must remain superior).
+# =============================================================================
+
+goods:
+  grain:
+    name: Grain
+    kind: raw
+    category: food
+    measure: { kind: mass, unit: sack, per_unit_kg: 5.0 } # 1 sack = 5 kg
+    stack: 20               # 100 kg per full stack
+    base_value: 2
+    perish_days: 365
+    gather_rate: 0          # farm-only in this economy
+    nutrition: { calories_per_kg: 3600 }
+    tags: [staple, farm]
+
+  vegetables:
+    name: Vegetables
+    kind: raw
+    category: food
+    measure: { kind: mass, unit: crate, per_unit_kg: 10.0 } # 1 crate = 10 kg
+    stack: 15               # 150 kg per full stack
+    base_value: 2
+    perish_days: 14
+    gather_rate: 0          # treat wild greens as negligible unless you add a separate wild veg good
+    nutrition: { calories_per_kg: 250 }
+    tags: [farm]
+
+  fruit:
+    name: Fruit
+    kind: raw
+    category: food
+    measure: { kind: mass, unit: basket, per_unit_kg: 5.0 } # 1 basket = 5 kg
+    stack: 30               # 150 kg per full stack
+    base_value: 3
+    perish_days: 10
+    gather_rate: 35         # wild fruit is seasonal and slower than orchards
+    nutrition: { calories_per_kg: 500 }
+    tags: [farm, orchard, wild]
+
+  mushrooms:
+    name: Mushrooms
+    kind: raw
+    category: food
+    measure: { kind: mass, unit: bundle, per_unit_kg: 1.0 } # 1 bundle = 1 kg
+    stack: 60
+    base_value: 4
+    perish_days: 5
+    gather_rate: 50
+    nutrition: { calories_per_kg: 220 }
+    tags: [wild, foraged]
+
+  herbs:
+    name: Herbs
+    kind: raw
+    category: food
+    measure: { kind: mass, unit: bundle, per_unit_kg: 0.2 } # 1 bundle = 0.2 kg
+    stack: 100              # 20 kg per full stack (bulky, light)
+    base_value: 5
+    perish_days: 7
+    gather_rate: 45
+    nutrition: { calories_per_kg: 60 }
+    tags: [wild, foraged]
+
+  meat:
+    name: Meat
+    kind: raw
+    category: food
+    measure: { kind: mass, unit: haunch, per_unit_kg: 2.0 } # 1 haunch = 2 kg
+    stack: 30
+    base_value: 5
+    perish_days: 3
+    gather_rate: 25         # hunting is unreliable vs husbandry
+    nutrition: { calories_per_kg: 2500 }
+    tags: [animal]
+
+  fish:
+    name: Fish
+    kind: raw
+    category: food
+    measure: { kind: mass, unit: fish, per_unit_kg: 1.0 }   # 1 unit = 1 kg average catch
+    stack: 50
+    base_value: 4
+    perish_days: 2
+    gather_rate: 60
+    nutrition: { calories_per_kg: 1200 }
+    tags: [water, wild]
+
+  milk:
+    name: Milk
+    kind: raw
+    category: food
+    measure: { kind: volume, unit: jug, per_unit_l: 1.0, per_unit_kg: 1.0 } # 1 L ≈ 1 kg
+    stack: 60
+    base_value: 3
+    perish_days: 2
+    gather_rate: 0          # livestock product
+    nutrition: { calories_per_l: 650 }
+    tags: [animal, dairy]
+
+  eggs:
+    name: Eggs
+    kind: raw
+    category: food
+    measure: { kind: piece, unit: dozen, per_unit_kg: 0.6 } # 12 eggs ≈ 0.6 kg
+    stack: 60
+    base_value: 3
+    perish_days: 14
+    gather_rate: 0          # domesticated poultry
+    nutrition: { calories_per_dozen: 840 }
+    tags: [animal]
+
+  water:
+    name: Water
+    kind: raw
+    category: utility
+    measure: { kind: volume, unit: jug, per_unit_l: 1.0, per_unit_kg: 1.0 } # 1 jug = 1 L
+    stack: 100              # 100 kg per full stack
+    base_value: 1
+    perish_days: 9999
+    gather_rate: 95         # very gatherable, but never equal to optimized infrastructure
+    tags: [utility, wild]
+
+  logs:
+    name: Logs
+    kind: raw
+    category: material
+    measure: { kind: piece, unit: log, per_unit_kg: 25.0 }  # 1 log = 25 kg
+    stack: 5                # 125 kg per full stack (bulky)
+    base_value: 2
+    perish_days: 9999
+    gather_rate: 70
+    tags: [wood]
+
+  stone:
+    name: Stone
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: chunk, per_unit_kg: 10.0 } # 1 chunk = 10 kg
+    stack: 15               # 150 kg per full stack
+    base_value: 2
+    perish_days: 9999
+    gather_rate: 65
+    tags: [mineral]
+
+  clay:
+    name: Clay
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: lump, per_unit_kg: 5.0 }   # 1 lump = 5 kg
+    stack: 30               # 150 kg per full stack
+    base_value: 2
+    perish_days: 9999
+    gather_rate: 75
+    tags: [earth]
+
+  iron_ore:
+    name: Iron Ore
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: chunk, per_unit_kg: 10.0 } # 1 chunk = 10 kg
+    stack: 15               # 150 kg per full stack
+    base_value: 3
+    perish_days: 9999
+    gather_rate: 55
+    tags: [mineral, metal]
+
+  copper_ore:
+    name: Copper Ore
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: chunk, per_unit_kg: 10.0 }
+    stack: 15               # 150 kg per full stack
+    base_value: 4
+    perish_days: 9999
+    gather_rate: 50
+    tags: [mineral, metal]
+
+  tin_ore:
+    name: Tin Ore
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: chunk, per_unit_kg: 10.0 }
+    stack: 15               # 150 kg per full stack
+    base_value: 4
+    perish_days: 9999
+    gather_rate: 45
+    tags: [mineral, metal]
+
+  silver_ore:
+    name: Silver Ore
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: chunk, per_unit_kg: 10.0 }
+    stack: 15               # 150 kg per full stack
+    base_value: 7
+    perish_days: 9999
+    gather_rate: 25         # rarer nodes + slower extraction
+    tags: [mineral, metal, trade]
+
+  hides:
+    name: Hides
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: hide, per_unit_kg: 3.0 }   # 1 hide unit = 3 kg
+    stack: 40
+    base_value: 4
+    perish_days: 10
+    gather_rate: 25
+    tags: [animal]
+
+  fiber:
+    name: Fiber
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: bundle, per_unit_kg: 1.0 } # 1 bundle = 1 kg
+    stack: 60
+    base_value: 3
+    perish_days: 365
+    gather_rate: 0          # crop-based unless you add a wild fiber good
+    tags: [plant, textile]
+
+  reeds:
+    name: Reeds
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: bundle, per_unit_kg: 3.0 } # 1 bundle = 3 kg
+    stack: 50               # 150 kg per full stack
+    base_value: 2
+    perish_days: 365
+    gather_rate: 60
+    tags: [plant, thatch, wild]
+
+  salt:
+    name: Salt
+    kind: raw
+    category: material
+    measure: { kind: mass, unit: bag, per_unit_kg: 1.0 }    # 1 bag = 1 kg
+    stack: 60
+    base_value: 6
+    perish_days: 9999
+    gather_rate: 30         # geographically constrained
+    tags: [preservation, trade]

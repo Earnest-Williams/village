@@ -1,0 +1,323 @@
+meta:
+  schema: compound_goods
+  version: 2
+  id_namespace: medieval_village
+
+# =============================================================================
+# COMPOUND GOODS
+# =============================================================================
+# These are "capital/infrastructure" entries, not consumable inventory goods.
+# They are produced via build inputs, take time, and provide ongoing capabilities.
+#
+# Categories:
+# - facility: runs recipes (workers assigned, has capacity, enables recipes)
+# - fixture: placed infrastructure (no workers assigned, passive effects)
+# - equipment: movable durable item (durability, repairs, enables/boosts operations)
+#
+# -----------------------------------------------------------------------------
+# Schema Note: "effects" Semantics & Stacking
+# -----------------------------------------------------------------------------
+# Effects are data and must be machine-readable. Rules:
+#
+# 1) *_bonus fields are DECIMAL additive bonuses applied to a base.
+#    Example: water_gather_rate_bonus: 0.80 means +80%.
+#    Stacking rule: sum bonuses from all applicable sources, then apply once:
+#      final = base * (1 + sum(bonuses))
+#
+# 2) *_multiplier fields are multiplicative modifiers to a base.
+#    Example: travel_time_multiplier: 0.5 means half travel time.
+#    Stacking rule: multiply all multipliers:
+#      final = base * product(multipliers)
+#
+# 3) recipe_speed_bonus values are DECIMAL bonuses to throughput (not time).
+#    Example: +100% speed is stored as 1.00.
+#    Default interpretation:
+#      effective_cycle_time = base_time / (1 + sum(recipe_speed_bonus))
+#    (This keeps "speed bonuses" intuitive and avoids negative times.)
+#
+# 4) storage_bonus are absolute capacity increases (not percentages).
+#    Example: storage_bonus.grain: 200 means +200 grain capacity units.
+#
+# 5) When multiple effects of the same exact key apply, use the stacking rule above.
+#    When different keys conflict, prefer explicit resolution in code (do not guess in data).
+# =============================================================================
+
+compound_goods:
+
+  facilities:
+    # Core production chain facilities referenced by recipes.yaml must exist here.
+    # Costs/maintenance are intentionally "gamey but plausible" and can be tuned later.
+
+    bakery:
+      kind: facility
+      tier: 1
+      capacity: 2
+      build_time_days: 7
+      inputs: { lumber: 30, stone_blocks: 10, clay: 20, nails: 5 }
+      maintenance_per_season: { lumber: 2, nails: 1 }
+      enables_recipes: [bread_from_flour]
+
+    grain_mill:
+      kind: facility
+      tier: 1
+      capacity: 1
+      build_time_days: 14
+      inputs: { lumber: 40, stone_blocks: 20, iron_ingots: 3, nails: 8 }
+      maintenance_per_season: { lumber: 2, nails: 1 }
+      requires_equipment: [mill_wheel]
+      enables_recipes: [flour_from_grain]
+
+    brewery:
+      kind: facility
+      tier: 2
+      capacity: 2
+      build_time_days: 12
+      inputs: { lumber: 50, stone_blocks: 15, bricks: 25, nails: 8, iron_ingots: 2 }
+      maintenance_per_season: { lumber: 2, nails: 1 }
+      enables_recipes: [ale_from_grain]
+
+    smokehouse:
+      kind: facility
+      tier: 1
+      capacity: 1
+      build_time_days: 7
+      inputs: { lumber: 25, stone_blocks: 8, clay: 10, nails: 4 }
+      maintenance_per_season: { lumber: 1 }
+      enables_recipes: [preserved_food_from_meat, preserved_food_from_fish]
+
+    sawmill:
+      kind: facility
+      tier: 1
+      capacity: 1
+      build_time_days: 10
+      inputs: { lumber: 30, stone_blocks: 10, nails: 6, iron_ingots: 2 }
+      maintenance_per_season: { lumber: 2, nails: 1 }
+      enables_recipes: [lumber_from_logs]
+
+    woodcutter_hut:
+      kind: facility
+      tier: 0
+      capacity: 1
+      build_time_days: 3
+      inputs: { lumber: 12, stone: 5 }
+      maintenance_per_season: { lumber: 1 }
+      enables_recipes: [firewood_from_logs]
+
+    charcoal_pit:
+      kind: facility
+      tier: 1
+      capacity: 1
+      build_time_days: 6
+      inputs: { stone: 20, clay: 10, lumber: 10 }
+      maintenance_per_season: { clay: 2 }
+      enables_recipes: [charcoal_from_firewood]
+
+    kiln:
+      kind: facility
+      tier: 1
+      capacity: 1
+      build_time_days: 8
+      inputs: { stone: 20, clay: 25, bricks: 10 }
+      maintenance_per_season: { clay: 2 }
+      enables_recipes: [bricks_from_clay]
+
+    stonemason:
+      kind: facility
+      tier: 1
+      capacity: 1
+      build_time_days: 9
+      inputs: { stone_blocks: 10, lumber: 15, nails: 4, iron_ingots: 1 }
+      maintenance_per_season: { iron_ingots: 1 }  # tool wear represented abstractly
+      enables_recipes: [stone_blocks_from_stone]
+
+    smelter:
+      kind: facility
+      tier: 2
+      capacity: 1
+      build_time_days: 14
+      inputs: { stone_blocks: 25, bricks: 40, lumber: 20, iron_ingots: 4, nails: 10 }
+      maintenance_per_season: { bricks: 5 }
+      enables_recipes:
+        [iron_ingots_from_ore, copper_ingots_from_ore, tin_ingots_from_ore, silver_ingots_from_ore]
+
+    blacksmith:
+      kind: facility
+      tier: 2
+      capacity: 1
+      build_time_days: 12
+      inputs: { stone_blocks: 15, lumber: 25, bricks: 20, nails: 10, iron_ingots: 5 }
+      maintenance_per_season: { lumber: 2, nails: 1 }
+      requires_equipment: [forge_anvil]
+      enables_recipes: [nails_from_iron_ingots, tools_from_iron_ingots]
+
+    tannery:
+      kind: facility
+      tier: 1
+      capacity: 1
+      build_time_days: 10
+      inputs: { lumber: 30, stone_blocks: 10, clay: 10, nails: 6 }
+      maintenance_per_season: { salt: 2 }  # consumable upkeep represented here as maintenance
+      enables_recipes: [leather_from_hides]
+
+    weaver_hut:
+      kind: facility
+      tier: 1
+      capacity: 1
+      build_time_days: 8
+      inputs: { lumber: 25, stone: 10, nails: 5 }
+      maintenance_per_season: { lumber: 1 }
+      enables_recipes: [cloth_from_fiber]
+
+    thatching_shed:
+      kind: facility
+      tier: 0
+      capacity: 1
+      build_time_days: 4
+      inputs: { lumber: 15, reeds: 10 }
+      maintenance_per_season: { reeds: 2 }
+      enables_recipes: [thatch_from_reeds]
+
+  fixtures:
+    wall_section:
+      kind: fixture
+      build_time_days: 30
+      inputs: { stone_blocks: 100, iron_ingots: 30, lumber: 50, nails: 20 }
+      placement: perimeter
+      maintenance_per_season: { stone: 5 }
+      effects:
+        defense_bonus: 20
+        max_stack: 8
+
+    well:
+      kind: fixture
+      build_time_days: 10
+      inputs: { stone_blocks: 30, lumber: 10, iron_ingots: 2 }
+      placement: anywhere
+      effects:
+        water_gather_rate_bonus: 0.80
+        radius_tiles: 15
+      note: "Villagers gather water much faster within radius."
+
+    granary:
+      kind: fixture
+      build_time_days: 12
+      inputs: { lumber: 60, stone_blocks: 15, bricks: 40 }
+      placement: anywhere
+      effects:
+        storage_bonus: { grain: 200, flour: 100, vegetables: 50 }
+        perish_delay_days: 7
+
+    watchtower:
+      kind: fixture
+      build_time_days: 14
+      inputs: { lumber: 40, stone_blocks: 25, nails: 10 }
+      placement: anywhere
+      effects:
+        raid_warning_days: 3
+        vision_radius_tiles: 50
+
+    irrigation_channel_10m:
+      kind: fixture
+      build_time_days: 5
+      inputs: { stone: 50, clay: 30, lumber: 15 }
+      placement: linear
+      effects:
+        farm_yield_bonus_per_100m: 0.15
+        requires_water_source_connection: true
+      note: "Bonuses apply only when connected to a valid water source."
+
+    bridge:
+      kind: fixture
+      build_time_days: 20
+      inputs: { lumber: 80, stone_blocks: 40, iron_ingots: 5, nails: 20 }
+      placement: river_crossing
+      effects:
+        allows_crossing: river
+        travel_time_multiplier: 0.5
+
+  equipment:
+    wagon:
+      kind: equipment
+      build_time_days: 8
+      inputs: { lumber: 20, iron_ingots: 5, nails: 10, leather: 3 }
+      durability_uses: 500
+      repair_cost: { lumber: 5, iron_ingots: 1, nails: 2 }
+      effects:
+        gathering_radius_bonus: 0.50
+        enables_trade_caravans: true
+        carry_capacity_bonus: 2.00
+
+    plow_and_ox:
+      kind: equipment
+      build_time_days: 12
+      inputs: { iron_ingots: 8, lumber: 15, leather: 5, nails: 5 }
+      durability_uses: 300
+      maintenance_per_season: { grain: 20, vegetables: 10 }
+      effects:
+        farm_yield_bonus: 2.00
+        farm_area_bonus: 3.00
+        required_for_operations: [large_farm_operation]
+
+    mill_wheel:
+      kind: equipment
+      build_time_days: 10
+      inputs: { lumber: 40, iron_ingots: 10, nails: 15 }
+      durability_uses: 800
+      effects:
+        required_for_facilities: [grain_mill]
+        recipe_speed_bonus: { flour_from_grain: 1.00 }
+
+    fishing_boat:
+      kind: equipment
+      build_time_days: 14
+      inputs: { lumber: 25, nails: 8, cloth: 5, leather: 2 }
+      durability_uses: 400
+      effects:
+        fish_gather_rate_bonus: 1.50
+        enables_deep_water_fishing: true
+        capacity_workers: 2
+
+    hand_cart:
+      kind: equipment
+      build_time_days: 3
+      inputs: { lumber: 8, iron_ingots: 2, nails: 4 }
+      durability_uses: 200
+      effects:
+        carry_capacity_bonus: 0.50
+        travel_speed_bonus: 0.10
+
+    forge_anvil:
+      kind: equipment
+      build_time_days: 5
+      inputs: { iron_ingots: 20, stone_blocks: 10 }
+      durability_uses: 9999
+      effects:
+        required_for_facilities: [blacksmith]
+        recipe_quality_bonus: { tools: 1 }
+
+    loom_floor:
+      kind: equipment
+      build_time_days: 7
+      inputs: { lumber: 15, iron_ingots: 3, nails: 6 }
+      durability_uses: 600
+      effects:
+        required_for_recipes: [cloth_fine_from_fiber]   # placeholder unless defined
+        recipe_speed_bonus: { cloth_from_fiber: 0.50 }
+
+    press_olive:
+      kind: equipment
+      build_time_days: 8
+      inputs: { lumber: 20, stone_blocks: 15, iron_ingots: 4 }
+      durability_uses: 700
+      effects:
+        enables_recipes: [oil_from_olives, wine_from_grapes] # placeholders unless defined
+
+    miner_pickaxe_set:
+      kind: equipment
+      build_time_days: 2
+      inputs: { iron_ingots: 5, lumber: 3, leather: 2 }
+      durability_uses: 150
+      effects:
+        ore_gather_rate_bonus: 0.80
+        stone_gather_rate_bonus: 0.60
+        required_per_miner: 1

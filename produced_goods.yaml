@@ -1,0 +1,330 @@
+meta:
+  schema: goods_produced
+  version: 6
+  id_namespace: medieval_village
+
+# =============================================================================
+# GOODS (PRODUCED)
+# =============================================================================
+# Conventions:
+# - Produced goods are typically NOT gatherable (gather_rate: 0).
+# - Exceptions are allowed when "gathering" is really scavenging/foraging a processed form
+#   (example: seeds_wild as a byproduct that can also be found while foraging).
+#
+# Fuel conventions:
+# - Firewood: 16 MJ/kg (bundle is 5 kg => 80 MJ per bundle)
+# - Charcoal: 32 MJ/kg (1 kg bag => 32 MJ per bag), i.e., ~2x energy density
+# =============================================================================
+
+goods:
+  flour:
+    name: Flour
+    kind: produced
+    category: food
+    measure: { kind: mass, unit: bag, per_unit_kg: 1.0 }
+    stack: 150              # 150 kg per full stack
+    base_value: 2
+    perish_days: 120
+    gather_rate: 0
+    nutrition: { calories_per_kg: 3600 }
+    tags: [processed, baking]
+    made_from:
+      - recipe_id: flour_from_grain
+        inputs: { grain: 1 }     # 5 kg grain
+        outputs: { flour: 4 }    # 4 kg flour (bran accounted as byproduct in recipe)
+
+  bran:
+    name: Bran
+    kind: produced
+    category: food
+    measure: { kind: mass, unit: bag, per_unit_kg: 1.0 }
+    stack: 100              # 100 kg per full stack
+    base_value: 1
+    perish_days: 90
+    gather_rate: 0
+    nutrition: { calories_per_kg: 1200 }
+    tags: [animal_feed, byproduct]
+
+  bread:
+    name: Bread
+    kind: produced
+    category: food
+    measure: { kind: piece, unit: loaf, per_unit_kg: 0.75 }
+    stack: 80
+    base_value: 2
+    perish_days: 7
+    gather_rate: 0
+    nutrition: { calories_per_loaf: 1800 }
+    tags: [cooked, staple]
+    made_from:
+      - recipe_id: bread_from_flour
+        inputs: { flour: 5, water: 3 }  # 5 kg flour + 3 L water
+        outputs: { bread: 10 }          # 10 loaves = 7.5 kg; bake-off loss is implicit
+
+  ale:
+    name: Ale
+    kind: produced
+    category: drink
+    measure: { kind: volume, unit: jug, per_unit_l: 1.0, per_unit_kg: 1.0 }
+    stack: 120              # 120 kg per full stack
+    base_value: 2
+    perish_days: 60
+    gather_rate: 0
+    tags: [brew]
+    made_from:
+      - recipe_id: ale_from_grain
+        inputs: { grain: 1, water: 20 }
+        outputs: { ale: 20 }
+
+  preserved_food:
+    name: Preserved Food
+    kind: produced
+    category: food
+    measure: { kind: mass, unit: ration, per_unit_kg: 1.0 }
+    stack: 120
+    base_value: 3
+    perish_days: 180
+    gather_rate: 0
+    nutrition: { calories_per_kg: 2200 }
+    tags: [preserved]
+    made_from:
+      - recipe_id: preserved_food_from_meat
+        inputs: { meat: 3, salt: 1 }         # 6 kg meat + 1 kg salt
+        outputs: { preserved_food: 6 }
+      - recipe_id: preserved_food_from_fish
+        inputs: { fish: 8, salt: 1 }         # 8 kg fish + 1 kg salt
+        outputs: { preserved_food: 6 }        # larger loss (cleaning/drying)
+
+  lumber:
+    name: Lumber
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: plank, per_unit_kg: 5.0 }   # 1 plank unit = 5 kg
+    stack: 25               # 125 kg per full stack
+    base_value: 3
+    perish_days: 9999
+    gather_rate: 0
+    tags: [construction, wood]
+    made_from:
+      - recipe_id: lumber_from_logs
+        inputs: { logs: 1 }     # 25 kg log
+        outputs: { lumber: 4 }  # 20 kg planks; sawdust/offcuts untracked
+
+  firewood:
+    name: Firewood
+    kind: produced
+    category: fuel
+    measure: { kind: mass, unit: bundle, per_unit_kg: 5.0 }  # 1 bundle = 5 kg
+    stack: 25               # 125 kg per full stack
+    base_value: 2
+    perish_days: 9999
+    gather_rate: 15         # allow limited scavenging but keep inferior to production
+    fuel_mj_per_bundle: 80  # 5 kg * 16 MJ/kg
+    tags: [fuel]
+    made_from:
+      - recipe_id: firewood_from_logs
+        inputs: { logs: 1 }
+        outputs: { firewood: 4 }  # 20 kg split wood; waste untracked
+
+  charcoal:
+    name: Charcoal
+    kind: produced
+    category: fuel
+    measure: { kind: mass, unit: bag, per_unit_kg: 1.0 }     # 1 bag = 1 kg
+    stack: 150              # 150 kg per full stack
+    base_value: 3
+    perish_days: 9999
+    gather_rate: 0
+    fuel_mj_per_kg: 32      # ~2x firewood energy density
+    tags: [fuel, smithing]
+    made_from:
+      - recipe_id: charcoal_from_firewood
+        inputs: { firewood: 10 }   # 50 kg wood
+        outputs: { charcoal: 15 }  # ~30% yield band
+
+  thatch:
+    name: Thatch
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: bundle, per_unit_kg: 3.0 }  # 1 bundle = 3 kg
+    stack: 40               # 120 kg per full stack
+    base_value: 2
+    perish_days: 9999
+    gather_rate: 0
+    tags: [construction, roofing]
+    made_from:
+      - recipe_id: thatch_from_reeds
+        inputs: { reeds: 2 }       # 6 kg reeds
+        outputs: { thatch: 2 }     # 6 kg thatch; seeds as byproduct in recipe
+
+  seeds_wild:
+    name: Wild Seeds
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: pouch, per_unit_kg: 0.1 }   # 1 pouch = 100 g
+    stack: 100
+    base_value: 1
+    perish_days: 730
+    gather_rate: 20          # can be found while foraging; still worse than farm seed loops
+    tags: [farming, byproduct]
+
+  bricks:
+    name: Bricks
+    kind: produced
+    category: material
+    measure: { kind: piece, unit: brick, per_unit_kg: 2.5 }
+    stack: 50               # 125 kg per full stack
+    base_value: 1
+    perish_days: 9999
+    gather_rate: 0
+    tags: [construction]
+    made_from:
+      - recipe_id: bricks_from_clay
+        inputs: { clay: 10, firewood: 2 } # 50 kg clay + firing fuel
+        outputs: { bricks: 16 }           # 40 kg bricks; water loss implicit
+
+  stone_blocks:
+    name: Stone Blocks
+    kind: produced
+    category: material
+    measure: { kind: piece, unit: block, per_unit_kg: 20.0 }
+    stack: 6                # 120 kg per full stack
+    base_value: 3
+    perish_days: 9999
+    gather_rate: 0
+    tags: [construction]
+    made_from:
+      - recipe_id: stone_blocks_from_stone
+        inputs: { stone: 4 }          # 40 kg rough stone
+        outputs: { stone_blocks: 2 }  # 40 kg blocks; cutting waste implicit/untracked
+
+  slag:
+    name: Slag
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: chunk, per_unit_kg: 5.0 }   # 1 chunk = 5 kg
+    stack: 30               # 150 kg per full stack
+    base_value: 1
+    perish_days: 9999
+    gather_rate: 0
+    tags: [construction, byproduct]
+
+  iron_ingots:
+    name: Iron Ingots
+    kind: produced
+    category: material
+    measure: { kind: piece, unit: ingot, per_unit_kg: 1.0 }  # 1 ingot = 1 kg
+    stack: 150
+    base_value: 5
+    perish_days: 9999
+    gather_rate: 0
+    tags: [metal, smithing]
+    made_from:
+      - recipe_id: iron_ingots_from_ore
+        inputs: { iron_ore: 1, charcoal: 4 } # 10 kg ore + 4 kg charcoal
+        outputs: { iron_ingots: 1 }          # 10% yield
+
+  copper_ingots:
+    name: Copper Ingots
+    kind: produced
+    category: material
+    measure: { kind: piece, unit: ingot, per_unit_kg: 1.0 }
+    stack: 150
+    base_value: 6
+    perish_days: 9999
+    gather_rate: 0
+    tags: [metal, smithing]
+    made_from:
+      - recipe_id: copper_ingots_from_ore
+        inputs: { copper_ore: 1, charcoal: 4 }
+        outputs: { copper_ingots: 2 }
+
+  tin_ingots:
+    name: Tin Ingots
+    kind: produced
+    category: material
+    measure: { kind: piece, unit: ingot, per_unit_kg: 1.0 }
+    stack: 150
+    base_value: 6
+    perish_days: 9999
+    gather_rate: 0
+    tags: [metal, smithing]
+    made_from:
+      - recipe_id: tin_ingots_from_ore
+        inputs: { tin_ore: 1, charcoal: 4 }
+        outputs: { tin_ingots: 2 }
+
+  silver_ingots:
+    name: Silver Ingots
+    kind: produced
+    category: material
+    measure: { kind: piece, unit: ingot, per_unit_kg: 1.0 }
+    stack: 150
+    base_value: 10
+    perish_days: 9999
+    gather_rate: 0
+    tags: [metal, trade]
+    made_from:
+      - recipe_id: silver_ingots_from_ore
+        inputs: { silver_ore: 5, charcoal: 8 } # 50 kg ore + extra fuel
+        outputs: { silver_ingots: 1 }
+
+  nails:
+    name: Nails & Hardware
+    kind: produced
+    category: material
+    measure: { kind: piece, unit: bundle, per_unit_kg: 0.5 } # 1 bundle = 0.5 kg
+    stack: 200              # 100 kg per full stack
+    base_value: 3
+    perish_days: 9999
+    gather_rate: 0
+    tags: [construction, metal]
+    made_from:
+      - recipe_id: nails_from_iron_ingots
+        inputs: { iron_ingots: 1, charcoal: 1 }
+        outputs: { nails: 2 }  # 1.0 kg nails total
+
+  tools:
+    name: Tools
+    kind: produced
+    category: tool
+    measure: { kind: piece, unit: set, per_unit_kg: 3.0 }    # 1 set ≈ 3 kg
+    stack: 40
+    base_value: 35            # priced above sum of inputs to reflect skilled labor + utility
+    perish_days: 9999
+    gather_rate: 0
+    tags: [upgrade, productivity]
+    made_from:
+      - recipe_id: tools_from_iron_ingots
+        inputs: { iron_ingots: 3, charcoal: 1 }
+        outputs: { tools: 1 }
+
+  leather:
+    name: Leather
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: roll, per_unit_kg: 2.0 }    # 1 roll = 2 kg
+    stack: 60               # 120 kg per full stack
+    base_value: 7
+    perish_days: 365
+    gather_rate: 0
+    tags: [textile, crafting]
+    made_from:
+      - recipe_id: leather_from_hides
+        inputs: { hides: 2, salt: 1 }
+        outputs: { leather: 2 }
+
+  cloth:
+    name: Cloth
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: bolt, per_unit_kg: 2.0 }    # 1 bolt = 2 kg
+    stack: 60               # 120 kg per full stack
+    base_value: 7
+    perish_days: 365
+    gather_rate: 0
+    tags: [textile, crafting]
+    made_from:
+      - recipe_id: cloth_from_fiber
+        inputs: { fiber: 2 }
+        outputs: { cloth: 1 }

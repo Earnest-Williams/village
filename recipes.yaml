@@ -1,0 +1,205 @@
+meta:
+  schema: recipes
+  version: 6
+  id_namespace: medieval_village
+
+# =============================================================================
+# RECIPES
+# =============================================================================
+# Conventions:
+# - facility: must match a facility ID in compound_goods.yaml facilities section.
+# - inputs/outputs/byproducts: expressed in inventory units (defined by goods_* measure).
+# - byproducts are additional outputs; they do not replace main outputs.
+# - requirements.min_tier is a gate (player progression), not a physical constraint.
+# =============================================================================
+
+recipes:
+  flour_from_grain:
+    name: Mill Grain into Flour
+    facility: grain_mill          # UPDATED: was "mill"
+    cycle_time_s: 30
+    labor: 1
+    inputs: { grain: 1 }          # 1 sack = 5 kg grain
+    outputs: { flour: 4 }         # 4 bags = 4 kg flour
+    byproducts: { bran: 1 }       # 1 bag = 1 kg bran (mass conserved: 5 -> 4 + 1)
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  bread_from_flour:
+    name: Bake Bread
+    facility: bakery
+    cycle_time_s: 40
+    labor: 1
+    inputs: { flour: 5, water: 3 }
+    outputs: { bread: 10 }
+    byproducts: {}
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  ale_from_grain:
+    name: Brew Ale
+    facility: brewery
+    cycle_time_s: 90
+    labor: 1
+    inputs: { grain: 1, water: 20 }
+    outputs: { ale: 20 }
+    byproducts: {}
+    requirements: { min_tier: 2, tools_consumed: {} }
+
+  preserved_food_from_meat:
+    name: Smoke/Salt Meat into Rations
+    facility: smokehouse
+    cycle_time_s: 60
+    labor: 1
+    inputs: { meat: 3, salt: 1 }
+    outputs: { preserved_food: 6 }
+    byproducts: {}
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  preserved_food_from_fish:
+    name: Smoke/Salt Fish into Rations
+    facility: smokehouse
+    cycle_time_s: 60
+    labor: 1
+    inputs: { fish: 8, salt: 1 }
+    outputs: { preserved_food: 6 }
+    byproducts: {}
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  lumber_from_logs:
+    name: Saw Logs into Planks
+    facility: sawmill
+    cycle_time_s: 35
+    labor: 1
+    inputs: { logs: 1 }
+    outputs: { lumber: 4 }
+    byproducts: {}
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  firewood_from_logs:
+    name: Split Logs into Firewood
+    facility: woodcutter_hut
+    cycle_time_s: 25
+    labor: 1
+    inputs: { logs: 1 }
+    outputs: { firewood: 4 }
+    byproducts: {}
+    requirements: { min_tier: 0, tools_consumed: {} }
+
+  charcoal_from_firewood:
+    name: Burn Firewood into Charcoal
+    facility: charcoal_pit
+    cycle_time_s: 75
+    labor: 1
+    inputs: { firewood: 10 }
+    outputs: { charcoal: 15 }
+    byproducts: {}
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  bricks_from_clay:
+    name: Fire Clay into Bricks
+    facility: kiln
+    cycle_time_s: 70
+    labor: 1
+    inputs: { clay: 10, firewood: 2 } # firing energy
+    outputs: { bricks: 16 }
+    byproducts: {}
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  stone_blocks_from_stone:
+    name: Cut Stone into Blocks
+    facility: stonemason
+    cycle_time_s: 55
+    labor: 1
+    inputs: { stone: 4 }
+    outputs: { stone_blocks: 2 }
+    byproducts: {}
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  iron_ingots_from_ore:
+    name: Smelt Iron Ore into Ingots
+    facility: smelter
+    cycle_time_s: 90
+    labor: 1
+    inputs: { iron_ore: 1, charcoal: 4 }  # 10 kg ore + 4 kg charcoal
+    outputs: { iron_ingots: 1 }           # 10% yield: 1 kg iron
+    byproducts: { slag: 1 }               # 5 kg slag; remaining mass is untracked loss/fines/gases
+    requirements: { min_tier: 2, tools_consumed: {} }
+
+  copper_ingots_from_ore:
+    name: Smelt Copper Ore into Ingots
+    facility: smelter
+    cycle_time_s: 90
+    labor: 1
+    inputs: { copper_ore: 1, charcoal: 4 }
+    outputs: { copper_ingots: 2 }
+    byproducts: {}
+    requirements: { min_tier: 2, tools_consumed: {} }
+
+  tin_ingots_from_ore:
+    name: Smelt Tin Ore into Ingots
+    facility: smelter
+    cycle_time_s: 90
+    labor: 1
+    inputs: { tin_ore: 1, charcoal: 4 }
+    outputs: { tin_ingots: 2 }
+    byproducts: {}
+    requirements: { min_tier: 2, tools_consumed: {} }
+
+  silver_ingots_from_ore:
+    name: Smelt Silver Ore into Ingots
+    facility: smelter
+    cycle_time_s: 110
+    labor: 1
+    inputs: { silver_ore: 5, charcoal: 8 }
+    outputs: { silver_ingots: 1 }
+    byproducts: {}
+    requirements: { min_tier: 2, tools_consumed: {} }
+
+  nails_from_iron_ingots:
+    name: Forge Nails & Hardware
+    facility: blacksmith
+    cycle_time_s: 45
+    labor: 1
+    inputs: { iron_ingots: 1, charcoal: 1 }
+    outputs: { nails: 2 }
+    byproducts: {}
+    requirements: { min_tier: 2, tools_consumed: {} }
+
+  tools_from_iron_ingots:
+    name: Forge Tools
+    facility: blacksmith
+    cycle_time_s: 90
+    labor: 1
+    inputs: { iron_ingots: 3, charcoal: 1 }
+    outputs: { tools: 1 }
+    byproducts: {}
+    requirements: { min_tier: 2, tools_consumed: {} }
+
+  leather_from_hides:
+    name: Tan Hides into Leather
+    facility: tannery
+    cycle_time_s: 90
+    labor: 1
+    inputs: { hides: 2, salt: 1 }
+    outputs: { leather: 2 }
+    byproducts: {}
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  cloth_from_fiber:
+    name: Weave Fiber into Cloth
+    facility: weaver_hut
+    cycle_time_s: 75
+    labor: 1
+    inputs: { fiber: 2 }
+    outputs: { cloth: 1 }
+    byproducts: {}
+    requirements: { min_tier: 1, tools_consumed: {} }
+
+  thatch_from_reeds:
+    name: Bind Reeds into Thatch
+    facility: thatching_shed
+    cycle_time_s: 35
+    labor: 1
+    inputs: { reeds: 2 }
+    outputs: { thatch: 2 }
+    byproducts: { seeds_wild: 2 } # seeds shaken out during bundling
+    requirements: { min_tier: 0, tools_consumed: {} }
