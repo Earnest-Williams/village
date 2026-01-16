@@ -1,0 +1,77 @@
+# verb_frames.yaml (optional helper for your DSL/NLU layer)
+schema_version: "3.5"
+file: "verb_frames.yaml"
+
+verb_frames:
+  # Food / rest
+  - verb: eat
+    senses:
+      - pattern: "eat pottage"
+        action_id: EatPottage
+      - pattern: "eat ration"
+        action_id: EatRation
+      - pattern: "eat"
+        action_id: EatPottage
+        notes: "Default to home pottage when at home; work ration when at work per schedule."
+  - verb: drink
+    senses:
+      - pattern: "drink ale"
+        action_id: DrinkAle
+
+  - verb: sleep
+    senses:
+      - pattern: "sleep in bed"
+        action_id: SleepInBed
+      - pattern: "sleep"
+        action_id: SleepInBed
+        notes: "Fallback to SleepOnGround if no bed capacity."
+
+  # Work / production
+  - verb: gather
+    senses:
+      - pattern: "gather *"
+        action_id: GatherResource
+        params:
+          resource: "{{*}}"
+  - verb: forage
+    senses:
+      - pattern: "forage"
+        action_id: GatherResource
+        params:
+          resource: "forage_node"
+
+  - verb: haul
+    senses:
+      - pattern: "haul to depot"
+        action_id: HaulToDepot
+      - pattern: "haul to stockpile"
+        action_id: HaulToStockpile
+
+  - verb: work
+    senses:
+      - pattern: "work recipe *"
+        action_id: RunRecipe
+        params:
+          recipe_id: "{{*}}"
+      - pattern: "work"
+        action_id: RunRecipe
+
+  # Learning / social
+  - verb: teach
+    senses:
+      - pattern: "teach *"
+        action_id: TeachSkill
+        params:
+          target_skill: "{{*}}"
+
+  - verb: practice
+    senses:
+      - pattern: "practice *"
+        action_id: PracticeSkill
+        params:
+          target_skill: "{{*}}"
+
+  - verb: socialize
+    senses:
+      - pattern: "socialize"
+        action_id: Socialize
