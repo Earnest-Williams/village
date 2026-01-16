@@ -4,23 +4,24 @@ Medieval Village Simulation - Basic Gameplay Loop
 A turn-based resource management game with production chains.
 """
 
-import yaml
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 from collections import defaultdict
+
+import yaml
 
 
 @dataclass
 class Inventory:
     """Manages storage of goods with stack limits."""
     items: Dict[str, float] = field(default_factory=lambda: defaultdict(float))
-    
+
     def add(self, item: str, amount: float) -> float:
         """Add items, return amount actually added."""
         self.items[item] += amount
         return amount
-    
+
     def remove(self, item: str, amount: float) -> bool:
         """Remove items if available, return success."""
         if self.items[item] >= amount:
@@ -29,11 +30,11 @@ class Inventory:
                 del self.items[item]
             return True
         return False
-    
+
     def has(self, item: str, amount: float) -> bool:
         """Check if inventory has enough of an item."""
         return self.items.get(item, 0) >= amount
-    
+
     def get(self, item: str) -> float:
         """Get current amount of an item."""
         return self.items.get(item, 0)
@@ -46,7 +47,7 @@ class Facility:
     capacity: int
     workers_assigned: int = 0
     enabled_recipes: List[str] = field(default_factory=list)
-    
+
     def can_work(self) -> bool:
         return self.workers_assigned > 0
 
@@ -57,10 +58,10 @@ class Village:
     day: int = 1
     population: int = 5
     idle_workers: int = 5
-    
+
     inventory: Inventory = field(default_factory=Inventory)
     facilities: Dict[str, Facility] = field(default_factory=dict)
-    
+
     # Game data
     raw_goods: Dict = field(default_factory=dict)
     produced_goods: Dict = field(default_factory=dict)
@@ -70,7 +71,7 @@ class Village:
 
 class GameEngine:
     """Core game loop and mechanics."""
-    
+
     def __init__(self, data_path: Optional[str] = None):
         self.village = Village()
         # Default to ./data if it exists next to this module, otherwise fall back to the module directory
@@ -79,27 +80,27 @@ class GameEngine:
             data_dir = base_dir / "data"
             data_path = data_dir if data_dir.is_dir() else base_dir
         self.load_game_data(str(data_path))
-        
+
     def load_game_data(self, path: str):
         """Load YAML game data files."""
         base = Path(path)
 
-        with open(base / "raw_goods.yaml") as f:
+        with open(base / "raw_goods.yaml", encoding="utf-8") as f:
             data = yaml.safe_load(f)
             self.village.raw_goods = data.get("goods", {})
 
-        with open(base / "produced_goods.yaml") as f:
+        with open(base / "produced_goods.yaml", encoding="utf-8") as f:
             data = yaml.safe_load(f)
             self.village.produced_goods = data.get("goods", {})
 
         # Load compound goods from separate files
-        with open(base / "facilities.yaml") as f:
+        with open(base / "facilities.yaml", encoding="utf-8") as f:
             facilities_data = yaml.safe_load(f)
 
-        with open(base / "fixtures.yaml") as f:
+        with open(base / "fixtures.yaml", encoding="utf-8") as f:
             fixtures_data = yaml.safe_load(f)
 
-        with open(base / "equipment.yaml") as f:
+        with open(base / "equipment.yaml", encoding="utf-8") as f:
             equipment_data = yaml.safe_load(f)
 
         # Merge into compound_goods structure for backward compatibility
@@ -109,7 +110,7 @@ class GameEngine:
             "equipment": equipment_data.get("equipment", {}),
         }
 
-        with open(base / "recipes.yaml") as f:
+        with open(base / "recipes.yaml", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
             recipes_list = data.get("recipes", [])
             recipes_dict = {}
@@ -129,112 +130,112 @@ class GameEngine:
                     "waste_chance": recipe.get("waste_chance", 0.0)
                 }
             self.village.recipes = recipes_dict
-    
+
     def get_all_goods(self) -> Dict:
         """Combined goods dictionary."""
         return {**self.village.raw_goods, **self.village.produced_goods}
-    
+
     def gather_resources(self, resource: str, workers: int = 1) -> float:
         """Gather raw resources. Returns amount gathered."""
         goods = self.get_all_goods()
-        
+
         if resource not in goods:
             return 0
-        
+
         item = goods[resource]
         gather_rate = item.get("gather_rate", 0)
-        
+
         if gather_rate == 0:
             return 0
-        
+
         # Base gathering: 1 worker gathers at rate% efficiency per day
         # This is simplified - real game would have more complex formulas
         base_amount = workers * (gather_rate / 100.0) * 10  # 10 units at 100% rate
-        
+
         self.village.inventory.add(resource, base_amount)
         return base_amount
-    
+
     def build_facility(self, facility_id: str) -> bool:
         """Build a facility if resources are available."""
         facilities = self.village.compound_goods.get("facilities", {})
-        
+
         if facility_id not in facilities:
             return False
-        
+
         if facility_id in self.village.facilities:
             return False  # Already built
-        
+
         facility_data = facilities[facility_id]
         inputs = facility_data.get("inputs", {})
-        
+
         # Check resources
         for item, amount in inputs.items():
             if not self.village.inventory.has(item, amount):
                 return False
-        
+
         # Consume resources
         for item, amount in inputs.items():
             self.village.inventory.remove(item, amount)
-        
+
         # Create facility
         capacity = facility_data.get("capacity", 1)
         enabled = facility_data.get("enables_recipes", [])
-        
+
         self.village.facilities[facility_id] = Facility(
             facility_id=facility_id,
             capacity=capacity,
             enabled_recipes=enabled
         )
-        
+
         return True
-    
+
     def assign_worker(self, facility_id: str, workers: int = 1) -> bool:
         """Assign workers to a facility."""
         if facility_id not in self.village.facilities:
             return False
-        
+
         if self.village.idle_workers < workers:
             return False
-        
+
         facility = self.village.facilities[facility_id]
         if facility.workers_assigned + workers > facility.capacity:
             return False
-        
+
         facility.workers_assigned += workers
         self.village.idle_workers -= workers
         return True
-    
+
     def unassign_worker(self, facility_id: str, workers: int = 1) -> bool:
         """Remove workers from a facility."""
         if facility_id not in self.village.facilities:
             return False
-        
+
         facility = self.village.facilities[facility_id]
         if facility.workers_assigned < workers:
             return False
-        
+
         facility.workers_assigned -= workers
         self.village.idle_workers += workers
         return True
-    
+
     def run_recipe(self, recipe_id: str, facility_id: str, times: int = 1) -> int:
         """Run a recipe at a facility. Returns number of successful runs."""
         if recipe_id not in self.village.recipes:
             return 0
-        
+
         if facility_id not in self.village.facilities:
             return 0
-        
+
         recipe = self.village.recipes[recipe_id]
         facility = self.village.facilities[facility_id]
-        
+
         # Check recipe is enabled at this facility
         if recipe.get("facility") != facility_id:
             return 0
-        
+
         if not facility.can_work():
             return 0
-        
+
         successful = 0
         for _ in range(times):
             # Check inputs
@@ -243,28 +244,28 @@ class GameEngine:
                 self.village.inventory.has(item, amount)
                 for item, amount in inputs.items()
             )
-            
+
             if not can_craft:
                 break
-            
+
             # Consume inputs
             for item, amount in inputs.items():
                 self.village.inventory.remove(item, amount)
-            
+
             # Add outputs
             outputs = recipe.get("outputs", {})
             for item, amount in outputs.items():
                 self.village.inventory.add(item, amount)
-            
+
             # Add byproducts
             byproducts = recipe.get("byproducts", {})
             for item, amount in byproducts.items():
                 self.village.inventory.add(item, amount)
-            
+
             successful += 1
-        
+
         return successful
-    
+
     def advance_day(self):
         """Process end-of-day production and advance time."""
         # Auto-run recipes at facilities with assigned workers
@@ -282,13 +283,13 @@ class GameEngine:
                             self.run_recipe(recipe_id, facility_id, runs)
 
         self.village.day += 1
-    
+
     def print_status(self):
         """Display current village status."""
         print(f"\n{'='*60}")
         print(f"Day {self.village.day} | Population: {self.village.population} | Idle Workers: {self.village.idle_workers}")
         print(f"{'='*60}")
-        
+
         # Inventory
         if self.village.inventory.items:
             print("\n📦 INVENTORY:")
@@ -296,7 +297,7 @@ class GameEngine:
                 print(f"  {item}: {amount:.1f}")
         else:
             print("\n📦 INVENTORY: Empty")
-        
+
         # Facilities
         if self.village.facilities:
             print("\n🏭 FACILITIES:")
@@ -312,49 +313,49 @@ def main():
     print("=" * 60)
     print("MEDIEVAL VILLAGE SIMULATION")
     print("=" * 60)
-    
+
     game = GameEngine()
-    
+
     print("\nStarting with 5 idle workers and no resources.")
     print("Let's gather some basic materials to get started!")
-    
+
     # Tutorial: Gather initial resources
     print("\n--- GATHERING PHASE (Day 1-3) ---")
     print("Assigning 2 workers to gather logs...")
     game.gather_resources("logs", workers=2)
-    
+
     print("Assigning 2 workers to gather stone...")
     game.gather_resources("stone", workers=2)
-    
+
     print("Assigning 1 worker to gather clay...")
     game.gather_resources("clay", workers=1)
-    
+
     game.print_status()
-    
+
     # Build first facility
     print("\n--- BUILDING PHASE (Day 4) ---")
     print("Attempting to build woodworker_hut...")
-    
+
     if game.build_facility("woodworker_hut"):
         print("✓ Built woodworker_hut!")
     else:
         print("✗ Cannot build - missing resources")
         print("Required: lumber: 12, stone: 5")
         print("We need to process logs into lumber first!")
-    
+
     # Try to build sawmill instead
     print("\nTrying sawmill instead (needs: lumber: 30, stone_blocks: 10, nails: 6, iron_ingots: 2)...")
     print("We don't have these either. Let's gather more raw materials.")
-    
+
     # More gathering
     print("\n--- MORE GATHERING (Day 4-7) ---")
     for day in range(3):
         game.gather_resources("logs", workers=3)
         game.gather_resources("stone", workers=2)
         game.advance_day()
-    
+
     game.print_status()
-    
+
     # Interactive loop
     print("\n" + "=" * 60)
     print("INTERACTIVE MODE")
@@ -370,29 +371,29 @@ def main():
     print("  list [goods|facilities|recipes] - List available items")
     print("  help                        - Show this help")
     print("  quit                        - Exit game")
-    
+
     while True:
         try:
             cmd = input(f"\n[Day {game.village.day}]> ").strip().lower().split()
-            
+
             if not cmd:
                 continue
-            
+
             action = cmd[0]
-            
+
             if action == "quit":
                 print("Thanks for playing!")
                 break
-            
+
             elif action == "status":
                 game.print_status()
-            
+
             elif action == "help":
                 print("\nAvailable commands: gather, build, assign, unassign, recipe, next, status, list, help, quit")
-            
+
             elif action == "list":
                 category = cmd[1] if len(cmd) > 1 else "goods"
-                
+
                 if category == "goods":
                     print("\nRAW GOODS:")
                     for gid in sorted(game.village.raw_goods.keys()):
@@ -401,7 +402,7 @@ def main():
                     print("\nPRODUCED GOODS:")
                     for gid in sorted(game.village.produced_goods.keys()):
                         print(f"  {gid}")
-                
+
                 elif category == "facilities":
                     facilities = game.village.compound_goods.get("facilities", {})
                     print("\nAVAILABLE FACILITIES:")
@@ -411,7 +412,7 @@ def main():
                         inp_str = ", ".join(f"{k}:{v}" for k, v in inputs.items())
                         print(f"  [{built}] {fid}")
                         print(f"      Requires: {inp_str}")
-                
+
                 elif category == "recipes":
                     print("\nAVAILABLE RECIPES:")
                     for rid, rdata in game.village.recipes.items():
@@ -422,11 +423,11 @@ def main():
                         out_str = ", ".join(f"{k}:{v}" for k, v in outputs.items())
                         print(f"  {rid} @ {facility}")
                         print(f"      In: {inp_str} → Out: {out_str}")
-            
+
             elif action == "gather" and len(cmd) >= 2:
                 resource = cmd[1]
                 workers = int(cmd[2]) if len(cmd) > 2 else 1
-                
+
                 if workers > game.village.idle_workers:
                     print(f"Not enough idle workers! Have {game.village.idle_workers}, need {workers}")
                 else:
@@ -435,7 +436,7 @@ def main():
                         print(f"Gathered {amount:.1f} {resource}")
                     else:
                         print(f"Cannot gather {resource} (gather_rate is 0 or invalid resource)")
-            
+
             elif action == "build" and len(cmd) >= 2:
                 facility = cmd[1]
                 if game.build_facility(facility):
@@ -446,45 +447,45 @@ def main():
                     if facility in facilities:
                         req = facilities[facility].get("inputs", {})
                         print(f"Required: {req}")
-            
+
             elif action == "assign" and len(cmd) >= 2:
                 facility = cmd[1]
                 workers = int(cmd[2]) if len(cmd) > 2 else 1
-                
+
                 if game.assign_worker(facility, workers):
                     print(f"✓ Assigned {workers} worker(s) to {facility}")
                 else:
                     print(f"✗ Cannot assign workers to {facility}")
-            
+
             elif action == "unassign" and len(cmd) >= 2:
                 facility = cmd[1]
                 workers = int(cmd[2]) if len(cmd) > 2 else 1
-                
+
                 if game.unassign_worker(facility, workers):
                     print(f"✓ Removed {workers} worker(s) from {facility}")
                 else:
                     print(f"✗ Cannot remove workers from {facility}")
-            
+
             elif action == "recipe" and len(cmd) >= 3:
                 recipe_id = cmd[1]
                 facility_id = cmd[2]
                 times = int(cmd[3]) if len(cmd) > 3 else 1
-                
+
                 runs = game.run_recipe(recipe_id, facility_id, times)
                 if runs > 0:
                     print(f"✓ Ran {recipe_id} {runs} time(s)")
                 else:
                     print(f"✗ Could not run {recipe_id}")
-            
+
             elif action == "next":
                 game.advance_day()
                 print(f"Advanced to day {game.village.day}")
                 print("Facilities with workers have auto-produced items.")
                 game.print_status()
-            
+
             else:
                 print("Unknown command. Type 'help' for commands.")
-        
+
         except KeyboardInterrupt:
             print("\nExiting...")
             break
