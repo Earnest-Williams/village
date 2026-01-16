@@ -4,8 +4,10 @@ Unit tests for v3.5 recipe migration and schema validation.
 """
 
 import unittest
-import yaml
 from pathlib import Path
+
+import yaml
+
 from village_game import GameEngine
 
 
@@ -17,26 +19,26 @@ class TestRecipeMigration(unittest.TestCase):
         self.base_path = Path('.')
 
         # Load v3.5 recipes (now the main recipes.yaml)
-        with open(self.base_path / 'recipes.yaml') as f:
+        with open(self.base_path / 'recipes.yaml', encoding='utf-8') as f:
             self.v35_data = yaml.safe_load(f)
 
         # Load legacy recipes (archived)
-        with open(self.base_path / 'recipes_legacy.yaml') as f:
+        with open(self.base_path / 'recipes_legacy.yaml', encoding='utf-8') as f:
             self.legacy_data = yaml.safe_load(f)
 
         # Load goods for validation
-        with open(self.base_path / 'raw_goods.yaml') as f:
+        with open(self.base_path / 'raw_goods.yaml', encoding='utf-8') as f:
             raw_data = yaml.safe_load(f)
             self.raw_goods = raw_data.get('goods', {})
 
-        with open(self.base_path / 'produced_goods.yaml') as f:
+        with open(self.base_path / 'produced_goods.yaml', encoding='utf-8') as f:
             prod_data = yaml.safe_load(f)
             self.produced_goods = prod_data.get('goods', {})
 
         self.all_goods = {**self.raw_goods, **self.produced_goods}
 
         # Load facilities
-        with open(self.base_path / 'facilities.yaml') as f:
+        with open(self.base_path / 'facilities.yaml', encoding='utf-8') as f:
             fac_data = yaml.safe_load(f)
             self.facilities = fac_data.get('facilities', {})
 
@@ -166,7 +168,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_legacy_recipe_format(self):
         """Test that legacy recipes have dict structure."""
-        with open('recipes_legacy.yaml') as f:
+        with open('recipes_legacy.yaml', encoding='utf-8') as f:
             data = yaml.safe_load(f)
             recipes = data.get('recipes', {})
             self.assertIsInstance(recipes, dict,
@@ -174,7 +176,7 @@ class TestSchemaValidation(unittest.TestCase):
 
     def test_v35_recipe_format(self):
         """Test that v3.5 recipes have list structure."""
-        with open('recipes.yaml') as f:
+        with open('recipes.yaml', encoding='utf-8') as f:
             data = yaml.safe_load(f)
             recipes = data.get('recipes', [])
             self.assertIsInstance(recipes, list,

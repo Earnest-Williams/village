@@ -1,0 +1,26 @@
+[MASTER]
+ignore=__pycache__
+init-hook='import sys; sys.path.append(".")'
+
+[FORMAT]
+max-line-length=120
+
+[MESSAGES CONTROL]
+disable=
+    C0116,  # missing-function-docstring
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0303,  # trailing-whitespace
+    C0301,  # line-too-long
+    C0304,  # missing-final-newline
+    R0902,  # too-many-instance-attributes
+    R0914,  # too-many-locals
+    R0912,  # too-many-branches
+    R0915,  # too-many-statements
+    R1705,  # no-else-return
+    R1722,  # consider-using-sys-exit
+    R1723,  # no-else-break / no-else-return suggestions
+    W0612,  # unused-variable
+    R0801,  # duplicate-code
+    R0903,  # too-few-public-methods
+    W0718   # broad-exception-caught
