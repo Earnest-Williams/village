@@ -1,0 +1,383 @@
+# actions_catalog.yaml
+# VILLAGE v3.5 compliant action schema (Section 17.1) :contentReference[oaicite:9]{index=9}
+schema_version: "3.5"
+file: "actions_catalog.yaml"
+
+# Notes:
+# - energy_delta_per_hour is aligned to v3.5 MVP constants (awake drain handled globally; work=-0.5/hr; sleep recovers). :contentReference[oaicite:10]{index=10}
+# - calorie_activity_band maps to v3.5 activity multipliers. :contentReference[oaicite:11]{index=11}
+# - interrupt penalty policies align to the v3.5 “Now” interrupt costs guidance. :contentReference[oaicite:12]{index=12}
+
+actions:
+  - id: EatPottage
+    tags: [food, home]
+    preconditions:
+      - predicate: is_at_home
+      - predicate: household_has_pot_inventory
+      - predicate: is_mealtime_home_pottage   # morning home OR evening home per schedule
+    effects:
+      - type: consume_from_pot_inventory
+        quantities:
+          grain: "0.30 * portion_scale"
+          each_standard_extra_type: "0.05 * portion_scale"
+          eggs: "1.0 * portion_scale"
+          milk: "0.05 * portion_scale"
+      - type: calorie_bank_add_from_consumed_items
+      - type: energy_add
+        amount: "2 + max(0, ingredient_types_consumed - 2)"
+    duration:
+      type: fixed
+      minutes: 20
+    location:
+      type: household_home
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp: null
+    energy_delta_per_hour: 0.0
+    calorie_activity_band: rest
+    interruptibility:
+      level: soft
+      penalty_policy: none
+
+  - id: EatRation
+    tags: [food, work]
+    preconditions:
+      - predicate: is_at_worksite
+      - predicate: is_mealtime_work_ration
+    effects:
+      - type: consume_from_stockpile_priority
+        priority:
+          - item: bread
+            qty: "0.35 * portion_scale"
+          - item: grain
+            qty: "0.30 * portion_scale"
+      - type: calorie_bank_add_from_consumed_items
+      - type: energy_add
+        amount: 2
+    duration:
+      type: fixed
+      minutes: 10
+    location:
+      type: current_worksite
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp: null
+    energy_delta_per_hour: 0.0
+    calorie_activity_band: rest
+    interruptibility:
+      level: soft
+      penalty_policy: none
+
+  - id: DrinkAle
+    tags: [food, work]
+    preconditions:
+      - predicate: is_at_worksite
+      - predicate: is_ale_draw_time        # 10:00 or 16:00
+    effects:
+      - type: consume_from_stockpile_or_substitute
+        primary:
+          item: ale
+          qty: 1.0         # liters
+        substitute:
+          - item: bread
+            qty: 0.16       # kg per missing liter
+          - item: grain
+            qty: 0.11       # kg per missing liter
+      - type: calorie_bank_add_from_consumed_items
+    duration:
+      type: fixed
+      minutes: 5
+    location:
+      type: current_worksite
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp: null
+    energy_delta_per_hour: 0.0
+    calorie_activity_band: rest
+    interruptibility:
+      level: none
+      penalty_policy: none
+
+  - id: SleepInBed
+    tags: [rest, home, sleep]
+    preconditions:
+      - predicate: is_night_phase
+      - predicate: household_has_bed_capacity
+    effects:
+      - type: sleep_state_set
+        value: true
+    duration:
+      type: variable
+      minutes: 60
+      repeatable: true
+    location:
+      type: household_home_bed
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp: null
+    energy_delta_per_hour: 2.0
+    calorie_activity_band: rest
+    interruptibility:
+      level: soft
+      penalty_policy: none
+
+  - id: SleepOnGround
+    tags: [rest, sleep]
+    preconditions:
+      - predicate: is_night_phase
+    effects:
+      - type: sleep_state_set
+        value: true
+    duration:
+      type: variable
+      minutes: 60
+      repeatable: true
+    location:
+      type: current_position
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp: null
+    energy_delta_per_hour: 1.0
+    calorie_activity_band: rest
+    interruptibility:
+      level: soft
+      penalty_policy: none
+
+  - id: IdleWait
+    tags: [rest]
+    preconditions: []
+    effects: []
+    duration:
+      type: variable
+      minutes: 30
+      repeatable: true
+    location:
+      type: current_position
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp: null
+    energy_delta_per_hour: 0.0
+    calorie_activity_band: rest
+    interruptibility:
+      level: none
+      penalty_policy: none
+
+  - id: Socialize
+    tags: [social]
+    preconditions:
+      - predicate: has_social_partner_available
+    effects:
+      - type: relationship_affinity_delta
+        amount_per_hour: 0.10
+      - type: mood_delta_small
+        amount: "+0.2"
+    duration:
+      type: variable
+      minutes: 60
+      repeatable: true
+    location:
+      type: common_area
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp: null
+    energy_delta_per_hour: 0.0
+    calorie_activity_band: rest
+    interruptibility:
+      level: none
+      penalty_policy: none
+
+  - id: TeachSkill
+    tags: [work, social, teach]
+    preconditions:
+      - predicate: has_teacher_and_student
+      - predicate: meets_min_session_minutes
+        args: [60]
+    effects:
+      - type: skill_xp_to_student
+        skill: "{{target_skill_id}}"
+        xp_per_hour: "base_xp * teacher_teaching_effectiveness"
+      - type: teaching_session_record
+    duration:
+      type: variable
+      minutes: 60
+      repeatable: true
+    location:
+      type: teaching_location
+      preferred: [schoolhouse, workshop, household_home]
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp:
+      skill: teaching
+      xp_per_hour: 4
+    energy_delta_per_hour: -0.5
+    calorie_activity_band: light
+    interruptibility:
+      level: soft
+      penalty_policy: continuous_progress_loss_50
+
+  - id: PracticeSkill
+    tags: [work, practice]
+    preconditions:
+      - predicate: has_practice_target_skill
+    effects:
+      - type: skill_xp_gain
+        skill: "{{target_skill_id}}"
+        xp_per_hour: 6
+    duration:
+      type: variable
+      minutes: 60
+      repeatable: true
+    location:
+      type: practice_area
+      preferred: [workshop, yard, household_home]
+    required:
+      facility: "{{practice_facility_or_null}}"
+      tool: "{{practice_tool_or_null}}"
+      permission: none
+    skill_xp:
+      skill: "{{target_skill_id}}"
+      xp_per_hour: 6
+    energy_delta_per_hour: -0.5
+    calorie_activity_band: light
+    interruptibility:
+      level: soft
+      penalty_policy: continuous_progress_loss_50
+
+  - id: GatherResource
+    tags: [work, gather]
+    preconditions:
+      - predicate: has_target_resource_node
+      - predicate: node_is_not_depleted
+      - predicate: has_inventory_capacity
+    effects:
+      - type: add_to_personal_inventory
+        item: "{{node.output_item}}"
+        qty: "{{compute_qty_from_time_and_carry_capacity}}"
+      - type: node_deplete_delta
+        amount: "{{compute_depletion}}"
+    duration:
+      type: variable
+      minutes: "{{node.base_gather_minutes}}"
+    location:
+      type: resource_node
+      node_ref: "{{node_id}}"
+    required:
+      facility: null
+      tool: "{{node.required_tool_or_null}}"
+      permission: none
+    skill_xp:
+      skill: "{{node.gather_skill_id}}"
+      xp_per_hour: 6
+    energy_delta_per_hour: -0.5
+    calorie_activity_band: moderate
+    interruptibility:
+      level: soft
+      penalty_policy: continuous_progress_loss_50
+
+  - id: HaulToDepot
+    tags: [work, haul]
+    preconditions:
+      - predicate: has_goods_in_personal_inventory
+      - predicate: has_target_depot
+    effects:
+      - type: transfer_inventory
+        from: personal_inventory
+        to: depot_inventory
+        qty: "{{min(carry_capacity, inventory_amount)}}"
+    duration:
+      type: variable
+      minutes: "{{travel_minutes + load_unload_minutes}}"
+    location:
+      type: depot
+      depot_ref: "{{depot_id}}"
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp: null
+    energy_delta_per_hour: -0.5
+    calorie_activity_band: moderate
+    interruptibility:
+      level: soft
+      penalty_policy: continuous_progress_loss_50
+
+  - id: HaulToStockpile
+    tags: [work, haul, porter]
+    preconditions:
+      - predicate: depot_needs_porter_flag_true
+      - predicate: has_assigned_porter_role_or_is_idle_labor
+    effects:
+      - type: transfer_inventory
+        from: depot_inventory
+        to: central_stockpile
+        qty: "{{min(carry_capacity, depot_available_amount)}}"
+      - type: depot_fill_check
+    duration:
+      type: variable
+      minutes: "{{travel_minutes + load_unload_minutes}}"
+    location:
+      type: depot
+      depot_ref: "{{depot_id}}"
+    required:
+      facility: null
+      tool: null
+      permission: none
+    skill_xp: null
+    energy_delta_per_hour: -0.5
+    calorie_activity_band: moderate
+    interruptibility:
+      level: soft
+      penalty_policy: continuous_progress_loss_50
+
+  - id: RunRecipe
+    tags: [work, produce]
+    preconditions:
+      - predicate: has_assigned_facility
+      - predicate: facility_has_selected_recipe
+      - predicate: stockpile_has_recipe_inputs_or_within_bubble
+    effects:
+      - type: consume_inputs
+        from: central_stockpile_or_facility
+        inputs: "{{recipe.inputs}}"
+      - type: produce_outputs
+        to: central_stockpile_or_facility
+        outputs: "{{recipe.outputs}}"
+      - type: produce_byproducts
+        to: central_stockpile_or_facility
+        byproducts: "{{recipe.byproducts}}"
+      - type: apply_waste_roll
+        chance: "{{recipe.waste_chance_plus_soft_prereq_penalties}}"
+    duration:
+      type: recipe_cycle_time
+      minutes: "{{recipe.cycle_time_minutes}}"
+    location:
+      type: facility
+      facility_ref: "{{facility_id}}"
+    required:
+      facility: "{{recipe.facility}}"
+      tool: null
+      permission: none
+    skill_xp:
+      skill: "{{recipe.skill_used}}"
+      xp_per_hour: 8
+    energy_delta_per_hour: -0.5
+    calorie_activity_band: light
+    interruptibility:
+      level: hard
+      penalty_policy: batch_loss_inputs_consumed_no_output
