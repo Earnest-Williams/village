@@ -4,12 +4,16 @@ Medieval Village Simulation - Basic Gameplay Loop
 A turn-based resource management game with production chains.
 """
 
+import logging
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 from collections import defaultdict
 
 import yaml
+
+# Setup logger for library code
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -82,26 +86,40 @@ class GameEngine:
         self.load_game_data(str(data_path))
 
     def load_game_data(self, path: str):
-        """Load YAML game data files."""
+        """Load YAML game data files with robust error handling."""
         base = Path(path)
 
-        with open(base / "raw_goods.yaml", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-            self.village.raw_goods = data.get("goods", {})
+        # Helper to safely load YAML files
+        def safe_load_yaml(filename: str, default_key: str = None):
+            """Load YAML file with error handling."""
+            file_path = base / filename
+            try:
+                with open(file_path, encoding="utf-8") as f:
+                    data = yaml.safe_load(f) or {}
+                    logger.debug(f"Loaded {filename}")
+                    return data
+            except FileNotFoundError:
+                logger.error(f"Missing data file: {file_path}")
+                return {}
+            except yaml.YAMLError as e:
+                logger.error(f"Invalid YAML in {filename}: {e}")
+                return {}
+            except Exception as e:
+                logger.error(f"Error loading {filename}: {e}")
+                return {}
 
-        with open(base / "produced_goods.yaml", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-            self.village.produced_goods = data.get("goods", {})
+        # Load raw goods
+        raw_data = safe_load_yaml("raw_goods.yaml")
+        self.village.raw_goods = raw_data.get("goods", {})
+
+        # Load produced goods
+        prod_data = safe_load_yaml("produced_goods.yaml")
+        self.village.produced_goods = prod_data.get("goods", {})
 
         # Load compound goods from separate files
-        with open(base / "facilities.yaml", encoding="utf-8") as f:
-            facilities_data = yaml.safe_load(f)
-
-        with open(base / "fixtures.yaml", encoding="utf-8") as f:
-            fixtures_data = yaml.safe_load(f)
-
-        with open(base / "equipment.yaml", encoding="utf-8") as f:
-            equipment_data = yaml.safe_load(f)
+        facilities_data = safe_load_yaml("facilities.yaml")
+        fixtures_data = safe_load_yaml("fixtures.yaml")
+        equipment_data = safe_load_yaml("equipment.yaml")
 
         # Merge into compound_goods structure for backward compatibility
         self.village.compound_goods = {
@@ -110,26 +128,35 @@ class GameEngine:
             "equipment": equipment_data.get("equipment", {}),
         }
 
-        with open(base / "recipes.yaml", encoding="utf-8") as f:
-            data = yaml.safe_load(f) or {}
-            recipes_list = data.get("recipes", [])
-            recipes_dict = {}
-            for recipe in recipes_list:
-                rid = recipe.get("id")
-                if not rid:
-                    continue
-                recipes_dict[rid] = {
-                    "facility": recipe.get("facility"),
-                    "inputs": recipe.get("inputs", {}),
-                    "outputs": recipe.get("outputs", {}),
-                    "byproducts": recipe.get("byproducts", {}),
-                    "cycle_time_minutes": recipe.get("cycle_time_minutes", 60),
-                    "workers_required": recipe.get("workers_required", 1),
-                    "skill_used": recipe.get("skill_used", ""),
-                    "min_skill": recipe.get("min_skill", 0),
-                    "waste_chance": recipe.get("waste_chance", 0.0)
-                }
-            self.village.recipes = recipes_dict
+        # Load recipes with conversion from list to dict format
+        recipes_data = safe_load_yaml("recipes.yaml")
+        recipes_list = recipes_data.get("recipes", [])
+        recipes_dict = {}
+        for recipe in recipes_list:
+            rid = recipe.get("id")
+            if not rid:
+                logger.warning(f"Recipe missing 'id' field, skipping: {recipe}")
+                continue
+            recipes_dict[rid] = {
+                "facility": recipe.get("facility"),
+                "inputs": recipe.get("inputs", {}),
+                "outputs": recipe.get("outputs", {}),
+                "byproducts": recipe.get("byproducts", {}),
+                "cycle_time_minutes": recipe.get("cycle_time_minutes", 60),
+                "workers_required": recipe.get("workers_required", 1),
+                "skill_used": recipe.get("skill_used", ""),
+                "min_skill": recipe.get("min_skill", 0),
+                "waste_chance": recipe.get("waste_chance", 0.0)
+            }
+        self.village.recipes = recipes_dict
+
+        # Log summary
+        logger.info(
+            f"Loaded game data: {len(self.village.raw_goods)} raw goods, "
+            f"{len(self.village.produced_goods)} produced goods, "
+            f"{len(self.village.compound_goods['facilities'])} facilities, "
+            f"{len(self.village.recipes)} recipes"
+        )
 
     def get_all_goods(self) -> Dict:
         """Combined goods dictionary."""
@@ -284,28 +311,37 @@ class GameEngine:
 
         self.village.day += 1
 
-    def print_status(self):
-        """Display current village status."""
-        print(f"\n{'='*60}")
-        print(f"Day {self.village.day} | Population: {self.village.population} | Idle Workers: {self.village.idle_workers}")
-        print(f"{'='*60}")
+    def get_status(self) -> str:
+        """Get current village status as a formatted string."""
+        lines = []
+        lines.append(f"\n{'='*60}")
+        lines.append(f"Day {self.village.day} | Population: {self.village.population} | Idle Workers: {self.village.idle_workers}")
+        lines.append(f"{'='*60}")
 
         # Inventory
         if self.village.inventory.items:
-            print("\n📦 INVENTORY:")
+            lines.append("\n📦 INVENTORY:")
             for item, amount in sorted(self.village.inventory.items.items()):
-                print(f"  {item}: {amount:.1f}")
+                lines.append(f"  {item}: {amount:.1f}")
         else:
-            print("\n📦 INVENTORY: Empty")
+            lines.append("\n📦 INVENTORY: Empty")
 
         # Facilities
         if self.village.facilities:
-            print("\n🏭 FACILITIES:")
+            lines.append("\n🏭 FACILITIES:")
             for fid, facility in self.village.facilities.items():
                 status = f"{facility.workers_assigned}/{facility.capacity} workers"
-                print(f"  {fid}: {status}")
+                lines.append(f"  {fid}: {status}")
         else:
-            print("\n🏭 FACILITIES: None")
+            lines.append("\n🏭 FACILITIES: None")
+
+        return "\n".join(lines)
+
+    def print_status(self):
+        """Display current village status (CLI wrapper)."""
+        status = self.get_status()
+        print(status)
+        logger.debug("Village status displayed")
 
 
 def main():
