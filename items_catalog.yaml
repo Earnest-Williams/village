@@ -1,5 +1,6 @@
 # items_catalog.yaml (optional helper)
-# Encodes the “standard calorie values” constants for data-driven effects. :contentReference[oaicite:15]{index=15}
+# Encodes the "standard calorie values" constants for data-driven effects.
+# v3.5: Added measure blocks with per_unit_kg and discrete flags for proper unit handling.
 schema_version: "3.5"
 file: "items_catalog.yaml"
 
@@ -7,39 +8,90 @@ items:
   - id: grain
     unit: kg
     calories_per_unit: 3500
+    measure:
+      per_unit_kg: 1.0
+      discrete: false
+
   - id: flour
     unit: kg
     calories_per_unit: 0         # treated as processed; you can override later if you want explicit calories
+    measure:
+      per_unit_kg: 1.0
+      discrete: false
+
   - id: bran
     unit: kg
     calories_per_unit: 0
+    measure:
+      per_unit_kg: 1.0
+      discrete: false
+
   - id: bread
-    unit: kg
+    unit: loaf
     calories_per_unit: 2500
+    measure:
+      per_unit_kg: 0.75          # 1 loaf ≈ 0.75 kg (matches produced_goods.yaml)
+      discrete: true
+
   - id: ale
     unit: L
     calories_per_unit: 400
+    measure:
+      per_unit_kg: 1.0           # keep quantity in liters (1.0 = identity)
+      discrete: false
+
   - id: meat
     unit: kg
     calories_per_unit: 2000
+    measure:
+      per_unit_kg: 1.0
+      discrete: false
+
   - id: fish
     unit: kg
     calories_per_unit: 1200
+    measure:
+      per_unit_kg: 1.0
+      discrete: false
+
   - id: vegetables
     unit: kg
     calories_per_unit: 250
+    measure:
+      per_unit_kg: 1.0
+      discrete: false
+
   - id: fruit
     unit: kg
     calories_per_unit: 500
+    measure:
+      per_unit_kg: 1.0
+      discrete: false
+
   - id: milk
     unit: L
     calories_per_unit: 600
+    measure:
+      per_unit_kg: 1.0           # keep quantity in liters
+      discrete: false
+
   - id: eggs
     unit: egg
     calories_per_unit: 70
+    measure:
+      per_unit_kg: 0.05          # 1 egg ≈ 50g
+      discrete: true
+
   - id: herbs
     unit: kg
     calories_per_unit: 50
+    measure:
+      per_unit_kg: 1.0
+      discrete: false
+
   - id: mushrooms
     unit: kg
     calories_per_unit: 50
+    measure:
+      per_unit_kg: 1.0
+      discrete: false

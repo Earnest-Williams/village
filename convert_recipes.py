@@ -18,13 +18,16 @@ def load_goods(paths):
         p = Path(p)
         if not p.exists():
             continue
-        data = yaml.safe_load(p.read_text())
-        goods = data.get('goods', {})
+        data = yaml.safe_load(p.read_text()) or {}
+        goods = data.get('goods', {}) or {}
         for gid, g in goods.items():
-            measure = g.get('measure', {})
+            measure = g.get('measure', {}) or {}
             per_unit = measure.get('per_unit_kg')
-            # default: assume 1.0 if not present
-            per_kg[gid] = float(per_unit) if per_unit is not None else 1.0
+            discrete = measure.get('discrete', False)
+            per_kg[gid] = {
+                'per_unit_kg': float(per_unit) if per_unit is not None else 1.0,
+                'discrete': bool(discrete)
+            }
     return per_kg
 
 def convert_amounts(mapping, per_kg_map, warnings):
@@ -34,7 +37,8 @@ def convert_amounts(mapping, per_kg_map, warnings):
             warnings.append(f"Unknown good '{item}' — using per_unit_kg=1.0 (fix or map manually).")
             per = 1.0
         else:
-            per = per_kg_map[item]
+            per = per_kg_map[item]['per_unit_kg']
+        # amt is in units of the old schema; convert to kg
         out[item] = float(amt) * float(per)
     return out
 

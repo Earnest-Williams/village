@@ -110,34 +110,25 @@ class GameEngine:
         }
 
         with open(base / "recipes.yaml") as f:
-            data = yaml.safe_load(f)
-            recipes_data = data.get("recipes", {})
-
-            # Support both v3.5 (list) and legacy (dict) recipe formats
-            if isinstance(recipes_data, list):
-                # v3.5 format: convert list to dict for backward compatibility
-                recipes_dict = {}
-                for recipe in recipes_data:
-                    recipe_id = recipe.get("id")
-                    if recipe_id:
-                        # Normalize v3.5 fields to legacy format
-                        normalized = {
-                            "facility": recipe.get("facility"),
-                            "inputs": recipe.get("inputs", {}),
-                            "outputs": recipe.get("outputs", {}),
-                            "byproducts": recipe.get("byproducts", {}),
-                            "cycle_time_s": recipe.get("cycle_time_minutes", 60) * 60,  # Convert to seconds
-                            "labor": recipe.get("workers_required", 1),
-                            "skill_used": recipe.get("skill_used", ""),
-                            "min_skill": recipe.get("min_skill", 0),
-                            "waste_chance": recipe.get("waste_chance", 0.0),
-                            "requirements": {"min_tier": 0, "tools_consumed": {}}
-                        }
-                        recipes_dict[recipe_id] = normalized
-                self.village.recipes = recipes_dict
-            else:
-                # Legacy format: use as-is
-                self.village.recipes = recipes_data
+            data = yaml.safe_load(f) or {}
+            recipes_list = data.get("recipes", [])
+            recipes_dict = {}
+            for recipe in recipes_list:
+                rid = recipe.get("id")
+                if not rid:
+                    continue
+                recipes_dict[rid] = {
+                    "facility": recipe.get("facility"),
+                    "inputs": recipe.get("inputs", {}),
+                    "outputs": recipe.get("outputs", {}),
+                    "byproducts": recipe.get("byproducts", {}),
+                    "cycle_time_minutes": recipe.get("cycle_time_minutes", 60),
+                    "workers_required": recipe.get("workers_required", 1),
+                    "skill_used": recipe.get("skill_used", ""),
+                    "min_skill": recipe.get("min_skill", 0),
+                    "waste_chance": recipe.get("waste_chance", 0.0)
+                }
+            self.village.recipes = recipes_dict
     
     def get_all_goods(self) -> Dict:
         """Combined goods dictionary."""
@@ -282,10 +273,14 @@ class GameEngine:
                 # Find recipes for this facility
                 for recipe_id, recipe in self.village.recipes.items():
                     if recipe.get("facility") == facility_id:
-                        # Try to run recipe based on worker count
-                        runs = facility.workers_assigned * 2  # 2 batches per worker per day
-                        self.run_recipe(recipe_id, facility_id, runs)
-        
+                        recipe_cycle = recipe.get("cycle_time_minutes", 60) or 60
+                        # how many times a single worker can complete this recipe in an 8h day
+                        work_hours_per_day = 8
+                        runs_per_worker = max(1, int((work_hours_per_day * 60) // recipe_cycle))
+                        runs = facility.workers_assigned * runs_per_worker
+                        if runs > 0:
+                            self.run_recipe(recipe_id, facility_id, runs)
+
         self.village.day += 1
     
     def print_status(self):

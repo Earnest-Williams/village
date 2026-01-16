@@ -328,3 +328,158 @@ goods:
       - recipe_id: cloth_from_fiber
         inputs: { fiber: 2 }
         outputs: { cloth: 1 }
+
+  thread:
+    name: Thread
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: spool, per_unit_kg: 0.1 }   # 1 spool = 0.1 kg
+    stack: 200              # 20 kg per full stack
+    base_value: 3
+    perish_days: 9999
+    gather_rate: 0
+    tags: [textile, intermediate]
+    made_from:
+      - recipe_id: spin_fiber_to_thread
+        inputs: { fiber: 10 }
+        outputs: { thread: 10 }
+
+  clothes:
+    name: Clothes
+    kind: produced
+    category: material
+    measure: { kind: piece, unit: garment, per_unit_kg: 2.0 }  # 1 garment = 2 kg
+    stack: 50               # 100 kg per full stack
+    base_value: 15
+    perish_days: 9999
+    gather_rate: 0
+    tags: [textile, finished]
+    made_from:
+      - recipe_id: sew_garments
+        inputs: { cloth: 5, thread: 2 }
+        outputs: { clothes: 2 }
+
+  iron_ingot:
+    name: Iron Ingot (singular)
+    kind: produced
+    category: material
+    measure: { kind: piece, unit: ingot, per_unit_kg: 1.0 }  # 1 ingot = 1 kg
+    stack: 150
+    base_value: 5
+    perish_days: 9999
+    gather_rate: 0
+    tags: [metal, smithing]
+    made_from:
+      - recipe_id: smelt_iron_ore
+        inputs: { iron_ore: 5, charcoal: 2 }
+        outputs: { iron_ingot: 4 }
+
+  tool_set:
+    name: Tool Set
+    kind: produced
+    category: tool
+    measure: { kind: piece, unit: set, per_unit_kg: 3.0 }    # 1 set ≈ 3 kg
+    stack: 40
+    base_value: 35
+    perish_days: 9999
+    gather_rate: 0
+    tags: [upgrade, productivity]
+    made_from:
+      - recipe_id: forge_tool_set
+        inputs: { iron_ingot: 3, lumber: 1 }
+        outputs: { tool_set: 1 }
+
+  preserved_meat:
+    name: Preserved Meat
+    kind: produced
+    category: food
+    measure: { kind: mass, unit: ration, per_unit_kg: 1.0 }
+    stack: 120
+    base_value: 4
+    perish_days: 180
+    gather_rate: 0
+    nutrition: { calories_per_kg: 2400 }
+    tags: [preserved]
+    made_from:
+      - recipe_id: smoke_meat
+        inputs: { meat: 10, firewood: 5, salt: 1 }
+        outputs: { preserved_meat: 8 }
+
+  dried_fish:
+    name: Dried Fish
+    kind: produced
+    category: food
+    measure: { kind: mass, unit: ration, per_unit_kg: 1.0 }
+    stack: 120
+    base_value: 3
+    perish_days: 180
+    gather_rate: 0
+    nutrition: { calories_per_kg: 2000 }
+    tags: [preserved]
+    made_from:
+      - recipe_id: dry_fish
+        inputs: { fish: 10, firewood: 3, salt: 1 }
+        outputs: { dried_fish: 8 }
+
+  ground_herbs:
+    name: Ground Herbs
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: pouch, per_unit_kg: 0.2 }   # 1 pouch = 0.2 kg
+    stack: 100              # 20 kg per full stack
+    base_value: 6
+    perish_days: 90
+    gather_rate: 0
+    tags: [medicine, intermediate]
+    made_from:
+      - recipe_id: grind_herbs
+        inputs: { herbs: 5 }
+        outputs: { ground_herbs: 5 }
+
+  remedy:
+    name: Remedy
+    kind: produced
+    category: material
+    measure: { kind: volume, unit: vial, per_unit_l: 0.5, per_unit_kg: 0.5 }  # 1 vial = 0.5 L
+    stack: 100              # 50 kg per full stack
+    base_value: 12
+    perish_days: 365
+    gather_rate: 0
+    tags: [medicine]
+    made_from:
+      - recipe_id: brew_remedy
+        inputs: { ground_herbs: 2, water: 2, alcohol: 0.5 }
+        outputs: { remedy: 2 }
+
+  alcohol:
+    name: Alcohol
+    kind: produced
+    category: drink
+    measure: { kind: volume, unit: flask, per_unit_l: 0.5, per_unit_kg: 0.45 }  # 1 flask = 0.5 L
+    stack: 100              # 45 kg per full stack
+    base_value: 8
+    perish_days: 9999
+    gather_rate: 0
+    tags: [brew, medicine]
+
+  sawdust:
+    name: Sawdust
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: bag, per_unit_kg: 1.0 }     # 1 bag = 1 kg
+    stack: 100              # 100 kg per full stack
+    base_value: 1
+    perish_days: 9999
+    gather_rate: 0
+    tags: [byproduct, fuel]
+
+  rubble:
+    name: Rubble
+    kind: produced
+    category: material
+    measure: { kind: mass, unit: chunk, per_unit_kg: 5.0 }   # 1 chunk = 5 kg
+    stack: 30               # 150 kg per full stack
+    base_value: 1
+    perish_days: 9999
+    gather_rate: 0
+    tags: [byproduct, construction]
