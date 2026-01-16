@@ -152,3 +152,68 @@ facilities:
     inputs: { lumber: 15, reeds: 10 }
     maintenance_per_season: { reeds: 2 }
     enables_recipes: [thatch_from_reeds]
+
+  # --- v3.5 additions ---
+
+  sawpit:
+    kind: facility
+    tier: 1
+    capacity: 2
+    build_time_days: 5
+    inputs: { lumber: 20, stone: 10, nails: 4 }
+    maintenance_per_season: { nails: 1 }
+    enables_recipes: [saw_logs_to_lumber]
+
+  mason_yard:
+    kind: facility
+    tier: 1
+    capacity: 2
+    build_time_days: 8
+    inputs: { stone_blocks: 8, lumber: 20, nails: 5, iron_ingots: 2 }
+    maintenance_per_season: { iron_ingots: 1 }
+    enables_recipes: [shape_stone_blocks]
+
+  spinning_wheel:
+    kind: facility
+    tier: 0
+    capacity: 1
+    build_time_days: 2
+    inputs: { lumber: 10, nails: 2 }
+    maintenance_per_season: {}
+    enables_recipes: [spin_fiber_to_thread]
+
+  loom:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 6
+    inputs: { lumber: 25, nails: 6, fiber: 5 }
+    maintenance_per_season: { lumber: 1 }
+    enables_recipes: [weave_cloth]
+
+  tailor_shop:
+    kind: facility
+    tier: 1
+    capacity: 1
+    build_time_days: 8
+    inputs: { lumber: 30, stone_blocks: 5, nails: 8, cloth: 5 }
+    maintenance_per_season: { lumber: 1 }
+    enables_recipes: [sew_garments]
+
+  herb_table:
+    kind: facility
+    tier: 0
+    capacity: 1
+    build_time_days: 2
+    inputs: { lumber: 8, stone: 3 }
+    maintenance_per_season: {}
+    enables_recipes: [grind_herbs]
+
+  apothecary:
+    kind: facility
+    tier: 2
+    capacity: 1
+    build_time_days: 10
+    inputs: { lumber: 35, stone_blocks: 12, bricks: 15, nails: 10 }
+    maintenance_per_season: { lumber: 2, herbs: 1 }
+    enables_recipes: [brew_remedy]
