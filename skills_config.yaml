@@ -1,0 +1,233 @@
+# skills_config.yaml
+# VILLAGE v3.5 compliant (Section 14.2 data location + schema intent) :contentReference[oaicite:6]{index=6}
+schema_version: "3.5"
+file: "skills_config.yaml"
+
+skills:
+  - id: farming
+    display_name: Farming
+    category: food
+    description: "Fieldwork, planting, harvesting, threshing."
+
+  - id: foraging
+    display_name: Foraging
+    category: food
+    description: "Gathering edible wild plants and mushrooms."
+
+  - id: hunting
+    display_name: Hunting
+    category: food
+    description: "Tracking and killing game; obtaining hides and meat."
+
+  - id: fishing
+    display_name: Fishing
+    category: food
+    description: "Catching fish from rivers/ponds; maintaining simple gear."
+
+  - id: cooking
+    display_name: Cooking
+    category: food
+    description: "Preparing meals and managing household food processes."
+
+  - id: milling
+    display_name: Milling
+    category: food
+    description: "Operating the grain mill; producing flour and bran."
+
+  - id: baking
+    display_name: Baking
+    category: food
+    description: "Baking bread and simple baked staples."
+
+  - id: brewing
+    display_name: Brewing
+    category: food
+    description: "Fermenting grain into ale; managing batches."
+
+  - id: logging
+    display_name: Logging
+    category: production
+    description: "Cutting and processing logs; producing firewood inputs."
+
+  - id: carpentry
+    display_name: Carpentry
+    category: production
+    description: "Woodworking; building and maintaining wooden goods."
+
+  - id: masonry
+    display_name: Masonry
+    category: production
+    description: "Stonework; shaping blocks and basic construction output."
+
+  - id: mining
+    display_name: Mining
+    category: production
+    description: "Extracting ore and stone from resource nodes."
+
+  - id: smelting
+    display_name: Smelting
+    category: production
+    description: "Smelting ore into ingots using fuel (charcoal)."
+
+  - id: smithing
+    display_name: Smithing
+    category: production
+    description: "Forging tools and metal goods from ingots."
+
+  - id: weaving
+    display_name: Weaving
+    category: production
+    description: "Turning fiber into cloth on a loom."
+
+  - id: tailoring
+    display_name: Tailoring
+    category: production
+    description: "Sewing cloth into garments and basic textiles."
+
+  - id: tanning
+    display_name: Tanning
+    category: production
+    description: "Turning hides into leather using salt/water processing."
+
+  - id: herbalism
+    display_name: Herbalism
+    category: knowledge
+    description: "Identifying and preparing useful herbs and mushrooms."
+
+  - id: medicine
+    display_name: Medicine
+    category: knowledge
+    description: "Preparing remedies; basic care and treatment."
+
+  - id: teaching
+    display_name: Teaching
+    category: knowledge
+    description: "Instructing others; determines teaching effectiveness."
+
+# Soft prerequisites: missing foundations reduce learning rate and add waste chance on advanced/batch tasks.
+# v3.5 describes the penalty conceptually; this file encodes it as data. :contentReference[oaicite:7]{index=7}
+soft_prereqs:
+  baking:
+    - required_skill: milling
+      required_level: 20
+      penalty:
+        learning_rate_mult: 0.75
+        waste_chance_add: 0.25
+    - required_skill: cooking
+      required_level: 20
+      penalty:
+        learning_rate_mult: 0.85
+        waste_chance_add: 0.10
+
+  brewing:
+    - required_skill: farming
+      required_level: 20
+      penalty:
+        learning_rate_mult: 0.85
+        waste_chance_add: 0.10
+    - required_skill: cooking
+      required_level: 20
+      penalty:
+        learning_rate_mult: 0.75
+        waste_chance_add: 0.25
+
+  smelting:
+    - required_skill: mining
+      required_level: 20
+      penalty:
+        learning_rate_mult: 0.80
+        waste_chance_add: 0.25
+    - required_skill: logging
+      required_level: 20
+      penalty:
+        learning_rate_mult: 0.85
+        waste_chance_add: 0.10
+
+  smithing:
+    - required_skill: smelting
+      required_level: 30
+      penalty:
+        learning_rate_mult: 0.70
+        waste_chance_add: 0.25
+    - required_skill: mining
+      required_level: 20
+      penalty:
+        learning_rate_mult: 0.85
+        waste_chance_add: 0.10
+
+  tailoring:
+    - required_skill: weaving
+      required_level: 30
+      penalty:
+        learning_rate_mult: 0.70
+        waste_chance_add: 0.25
+
+  medicine:
+    - required_skill: herbalism
+      required_level: 30
+      penalty:
+        learning_rate_mult: 0.70
+        waste_chance_add: 0.25
+
+  tanning:
+    - required_skill: hunting
+      required_level: 20
+      penalty:
+        learning_rate_mult: 0.80
+        waste_chance_add: 0.25
+
+# Mastery caps: v3.5 calls out caps in this file; this is a practical, content-complete set. :contentReference[oaicite:8]{index=8}
+caps:
+  - target_skill: baking
+    cap_level: 60
+    required_skill: milling
+    required_level: 30
+  - target_skill: baking
+    cap_level: 80
+    required_skill: milling
+    required_level: 60
+
+  - target_skill: brewing
+    cap_level: 60
+    required_skill: cooking
+    required_level: 30
+  - target_skill: brewing
+    cap_level: 80
+    required_skill: cooking
+    required_level: 60
+
+  - target_skill: smithing
+    cap_level: 60
+    required_skill: smelting
+    required_level: 30
+  - target_skill: smithing
+    cap_level: 80
+    required_skill: smelting
+    required_level: 60
+
+  - target_skill: smelting
+    cap_level: 60
+    required_skill: mining
+    required_level: 30
+  - target_skill: smelting
+    cap_level: 80
+    required_skill: mining
+    required_level: 60
+
+  - target_skill: tailoring
+    cap_level: 60
+    required_skill: weaving
+    required_level: 30
+  - target_skill: tailoring
+    cap_level: 80
+    required_skill: weaving
+    required_level: 60
+
+  - target_skill: medicine
+    cap_level: 60
+    required_skill: herbalism
+    required_level: 30
+  - target_skill: medicine
+    cap_level: 80
+    required_skill: herbalism
+    required_level: 60
