@@ -63,3 +63,5 @@ saves/
 
 # Generated recipe conversion outputs
 *_converted*.yaml
+*_test_output.yaml
+recipes_test*.yaml
