@@ -111,7 +111,33 @@ class GameEngine:
 
         with open(base / "recipes.yaml") as f:
             data = yaml.safe_load(f)
-            self.village.recipes = data.get("recipes", {})
+            recipes_data = data.get("recipes", {})
+
+            # Support both v3.5 (list) and legacy (dict) recipe formats
+            if isinstance(recipes_data, list):
+                # v3.5 format: convert list to dict for backward compatibility
+                recipes_dict = {}
+                for recipe in recipes_data:
+                    recipe_id = recipe.get("id")
+                    if recipe_id:
+                        # Normalize v3.5 fields to legacy format
+                        normalized = {
+                            "facility": recipe.get("facility"),
+                            "inputs": recipe.get("inputs", {}),
+                            "outputs": recipe.get("outputs", {}),
+                            "byproducts": recipe.get("byproducts", {}),
+                            "cycle_time_s": recipe.get("cycle_time_minutes", 60) * 60,  # Convert to seconds
+                            "labor": recipe.get("workers_required", 1),
+                            "skill_used": recipe.get("skill_used", ""),
+                            "min_skill": recipe.get("min_skill", 0),
+                            "waste_chance": recipe.get("waste_chance", 0.0),
+                            "requirements": {"min_tier": 0, "tools_consumed": {}}
+                        }
+                        recipes_dict[recipe_id] = normalized
+                self.village.recipes = recipes_dict
+            else:
+                # Legacy format: use as-is
+                self.village.recipes = recipes_data
     
     def get_all_goods(self) -> Dict:
         """Combined goods dictionary."""
