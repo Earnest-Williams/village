@@ -60,3 +60,6 @@ Thumbs.db
 # Game saves (if implemented)
 *.sav
 saves/
+
+# Generated recipe conversion outputs
+*_converted*.yaml
