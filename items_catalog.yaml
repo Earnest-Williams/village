@@ -1,0 +1,45 @@
+# items_catalog.yaml (optional helper)
+# Encodes the “standard calorie values” constants for data-driven effects. :contentReference[oaicite:15]{index=15}
+schema_version: "3.5"
+file: "items_catalog.yaml"
+
+items:
+  - id: grain
+    unit: kg
+    calories_per_unit: 3500
+  - id: flour
+    unit: kg
+    calories_per_unit: 0         # treated as processed; you can override later if you want explicit calories
+  - id: bran
+    unit: kg
+    calories_per_unit: 0
+  - id: bread
+    unit: kg
+    calories_per_unit: 2500
+  - id: ale
+    unit: L
+    calories_per_unit: 400
+  - id: meat
+    unit: kg
+    calories_per_unit: 2000
+  - id: fish
+    unit: kg
+    calories_per_unit: 1200
+  - id: vegetables
+    unit: kg
+    calories_per_unit: 250
+  - id: fruit
+    unit: kg
+    calories_per_unit: 500
+  - id: milk
+    unit: L
+    calories_per_unit: 600
+  - id: eggs
+    unit: egg
+    calories_per_unit: 70
+  - id: herbs
+    unit: kg
+    calories_per_unit: 50
+  - id: mushrooms
+    unit: kg
+    calories_per_unit: 50
